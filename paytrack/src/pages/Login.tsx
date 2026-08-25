@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Triangle } from "lucide-react";
 
 export default function Login() {

@@ -94,7 +94,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="myemail@gmail.com"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"
               />
             </div>
 
@@ -113,7 +113,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"
                 />
                 <button
                   type="button"
@@ -132,14 +132,14 @@ export default function Login() {
 
             <div className="text-sm text-neutral-400">
               Forgot your password?{" "}
-              <a href="#" className="text-orange-400 hover:underline">
+              <a href="#" className="text-[#007BFF] hover:underline">
                 Reset
               </a>
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-orange-400 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-500"
+              className="w-full rounded-lg bg-[#1929B7] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90 "
             >
               Log in
             </button>

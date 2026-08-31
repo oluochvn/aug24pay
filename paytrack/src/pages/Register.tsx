@@ -118,7 +118,7 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="myemail@mail.com"
-                className="w-full rounded-lg border border-[neutral-700] bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
+                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
 
             </div>
 
@@ -171,6 +171,7 @@ export default function Register() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
+
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((v) => !v)}

@@ -11,7 +11,7 @@ export default function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("Incorrect password. Please check and try again");
+    setError("invalid password or email. Please check and try again");
   };
 
   return (
@@ -52,6 +52,7 @@ export default function Login() {
                 Email
               </label>
               <input
+               required
                 id="email"
                 type="email"
                 value={email}
@@ -70,6 +71,7 @@ export default function Login() {
               </label>
               <div className="relative">
                 <input
+                required
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}

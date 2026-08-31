@@ -59,11 +59,12 @@ export default function Register() {
                 Full name
               </label>
               <input
+                required
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Jane Cooper"
+                placeholder=""
                 className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               />
             </div>
@@ -76,11 +77,12 @@ export default function Register() {
                 Email
               </label>
               <input
+                required
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="business@mail.com"
+                placeholder="myemail@mail.com"
                 className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               />
             </div>
@@ -94,6 +96,8 @@ export default function Register() {
               </label>
               <div className="relative">
                 <input
+                  required
+                  minLength={6}
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -125,6 +129,7 @@ export default function Register() {
               </label>
               <div className="relative">
                 <input
+                  required
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}

@@ -101,7 +101,7 @@ export default function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder=""
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
+                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
             </div>
 
             <div>
@@ -118,7 +118,7 @@ export default function Register() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="myemail@mail.com"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
+                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
 
             </div>
 
@@ -138,7 +138,7 @@ export default function Register() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
+                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
 
                 <button
                   type="button"
@@ -170,7 +170,7 @@ export default function Register() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#012169] focus:ring-1 focus:ring-[#012169]"/>
+                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8]focus:ring-1 focus:ring-[#0014A8]"/>
 
                 <button
                   type="button"
@@ -189,7 +189,7 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-orange-400 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-500"
+              className="w-full rounded-lg bg-[#1929B7] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90"
             >
               Sign up
             </button>

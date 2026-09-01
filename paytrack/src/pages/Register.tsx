@@ -92,7 +92,7 @@ export default function Register() {
                 htmlFor="name"
                 className="mb-1.5 block text-sm font-medium text-neutral-300"
               >
-                Full name
+                Username
               </label>
               <input
                 required
@@ -100,7 +100,7 @@ export default function Register() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder=""
+                placeholder="Enter Username"
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
             </div>
 
@@ -117,7 +117,7 @@ export default function Register() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="myemail@mail.com"
+                placeholder="Your email address"
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
 
             </div>

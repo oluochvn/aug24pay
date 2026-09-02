@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Triangle } from "lucide-react";
 
+const API_BASE = "https://paytrack-7q6z.onrender.com";
+
 export default function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -11,18 +13,67 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     if (password !== confirmPassword) {
       setError("Passwords do not match. Please check and try again");
       return;
     }
-    setError("");
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // keep if backend sets a session/auth cookie
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // response had no JSON body
+      }
+
+      if (!res.ok) {
+        const message =
+          data?.message || data?.error || "Registration failed. Please try again.";
+        setError(message);
+        return;
+      }
+
+      // If backend returns a token, store it
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      navigate("/login");
+    } catch (err) {
+      setError("Could not reach the server. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = "/api/auth/google";
+    window.location.href = `${API_BASE}/api/auth/google`;
   };
 
   return (
@@ -119,7 +170,6 @@ export default function Register() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email address"
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
-
             </div>
 
             <div>
@@ -139,7 +189,6 @@ export default function Register() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"/>
-
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
@@ -188,9 +237,10 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#1929B7] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90"
+              disabled={loading}
+              className="w-full rounded-lg bg-[#1929B7] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign up
+              {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
 

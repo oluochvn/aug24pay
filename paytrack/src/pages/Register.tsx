@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Triangle } from "lucide-react";
 
-const API_BASE = "https://paytrack-7q6z.onrender.com";
-
 export default function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +30,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch(`https://paytrack-7q6z.onrender.com/register`, {
+      const res = await fetch(`https://pay-8mq3.onrender.com/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +88,7 @@ export default function Register() {
 
           <button
             type="button"
-            onClick={handleGoogleSignup}
+          
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-700 py-2.5 text-sm font-medium text-neutral-100 transition-colors hover:bg-neutral-900"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">

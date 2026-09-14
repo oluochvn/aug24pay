@@ -4,26 +4,77 @@ import { Eye, EyeOff, AlertCircle, Triangle } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("invalid password or email. Please check and try again");
+
+    setError("");
+
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("https://pay-8mq3.onrender.com/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setError(
+          data?.message ||
+            data?.error ||
+            "Invalid email or password. Please check and try again."
+        );
+        return;
+      }
+
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(
+        "Could not reach the server. Please check your connection and try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google";
+    window.location.href =
+      "https://pay-8mq3.onrender.com/api/auth/google";
   };
 
   return (
     <div className="min-h-screen w-full bg-black">
       <header className="flex items-center gap-2 px-6 py-5">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
-          <Triangle className="h-3.5 w-3.5 fill-black text-black" strokeWidth={0} />
+          <Triangle
+            className="h-3.5 w-3.5 fill-black text-black"
+            strokeWidth={0}
+          />
         </div>
+
         <span className="text-lg font-semibold tracking-tight text-white">
           Paytrack
         </span>
@@ -35,8 +86,13 @@ export default function Login() {
             <h1 className="text-2xl font-semibold text-white">
               Welcome back!
             </h1>
+
             <p className="mt-1 text-sm text-neutral-400">
-              Log in to your <span className="font-medium text-neutral-200">paytrack</span> account
+              Log in to your{" "}
+              <span className="font-medium text-neutral-200">
+                paytrack
+              </span>{" "}
+              account
             </p>
           </div>
 
@@ -50,25 +106,33 @@ export default function Login() {
                 fill="#4285F4"
                 d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.56-5.17 3.56-8.82z"
               />
+
               <path
                 fill="#34A853"
                 d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1C3.24 21.3 7.26 24 12 24z"
               />
+
               <path
                 fill="#FBBC05"
                 d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28v-3.1H1.26A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.26 5.38l4.01-3.1z"
               />
+
               <path
                 fill="#EA4335"
                 d="M12 4.77c1.76 0 3.34.6 4.59 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.26 0 3.24 2.7 1.26 6.62l4.01 3.1c.95-2.85 3.6-4.96 6.73-4.96z"
               />
             </svg>
+
             Continue with Google
           </button>
 
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-neutral-700" />
-            <span className="text-xs text-neutral-500">OR</span>
+
+            <span className="text-xs text-neutral-500">
+              OR
+            </span>
+
             <div className="h-px flex-1 bg-neutral-700" />
           </div>
 
@@ -79,7 +143,10 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="mt-6 space-y-4"
+          >
             <div>
               <label
                 htmlFor="email"
@@ -87,8 +154,9 @@ export default function Login() {
               >
                 Email
               </label>
+
               <input
-               required
+                required
                 id="email"
                 type="email"
                 value={email}
@@ -105,9 +173,10 @@ export default function Login() {
               >
                 Password
               </label>
+
               <div className="relative">
                 <input
-                required
+                  required
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -115,11 +184,18 @@ export default function Login() {
                   placeholder="••••••••"
                   className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"
                 />
+
                 <button
                   type="button"
-                  onClick={() => setShowPassword((v) => !v)}
+                  onClick={() =>
+                    setShowPassword((value) => !value)
+                  }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -132,16 +208,21 @@ export default function Login() {
 
             <div className="text-sm text-neutral-400">
               Forgot your password?{" "}
-              <a href="#" className="text-[#007BFF] hover:underline">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-[#007BFF] hover:underline"
+              >
                 Reset
-              </a>
+              </button>
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-[#1929B7] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90 "
+              disabled={loading}
+              className="w-full rounded-lg bg-[#1929B7] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Log in
+              {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
 
@@ -161,3 +242,4 @@ export default function Login() {
     </div>
   );
 }
+

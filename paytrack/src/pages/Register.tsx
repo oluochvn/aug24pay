@@ -32,12 +32,11 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
+      const res = await fetch(`https://paytrack-7q6z.onrender.com"/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // keep if backend sets a session/auth cookie
         body: JSON.stringify({
           name,
           email,
@@ -49,7 +48,7 @@ export default function Register() {
       try {
         data = await res.json();
       } catch {
-        // response had no JSON body
+        
       }
 
       if (!res.ok) {
@@ -57,11 +56,6 @@ export default function Register() {
           data?.message || data?.error || "Registration failed. Please try again.";
         setError(message);
         return;
-      }
-
-      // If backend returns a token, store it
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
       }
 
       navigate("/login");

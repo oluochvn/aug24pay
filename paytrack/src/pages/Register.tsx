@@ -32,13 +32,13 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch(`https://paytrack-7q6z.onrender.com/api/auth/register`, {
+      const res = await fetch(`https://paytrack-7q6z.onrender.com/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
+          username: name,
           email,
           password,
         }),
@@ -64,10 +64,6 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSignup = () => {
-    window.location.href = `${API_BASE}/api/auth/google`;
   };
 
   return (

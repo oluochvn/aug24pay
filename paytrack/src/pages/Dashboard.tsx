@@ -1,33 +1,26 @@
 import { useMemo } from "react";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
 import { useTransactions } from "../context/TransactionsContext";
 import { useSavings } from "../context/SavingsContext";
 
-function StatCard({
+function Stat({
   label,
   value,
-  icon: Icon,
-  tone,
+  accent = "ink",
 }: {
   label: string;
   value: string;
-  icon: React.ElementType;
-  tone: "neutral" | "green" | "red" | "orange";
+  accent?: "ink" | "positive" | "negative";
 }) {
-  const toneClasses = {
-    neutral: "bg-neutral-100 text-neutral-700",
-    green: "bg-green-50 text-green-600",
-    red: "bg-red-50 text-red-600",
-    orange: "bg-orange-50 text-orange-600",
-  }[tone];
+  const valueTone = {
+    ink: "text-zinc-900",
+    positive: "text-emerald-700",
+    negative: "text-zinc-900",
+  }[accent];
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5">
-      <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-lg ${toneClasses}`}>
-        <Icon className="h-4.5 w-4.5" />
-      </div>
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-neutral-900">{value}</p>
+    <div className="px-6 py-5 sm:px-8">
+      <p className="text-sm text-zinc-500">{label}</p>
+      <p className={`mt-2 text-xl font-medium tracking-tight tabular-nums ${valueTone}`}>{value}</p>
     </div>
   );
 }
@@ -71,22 +64,33 @@ export default function Dashboard() {
   const format = (n: number) =>
     `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
-      <p className="mt-1 text-sm text-neutral-500">Your financial overview</p>
+  const monthLabel = now.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total Balance" value={format(stats.balance)} icon={Wallet} tone="neutral" />
-        <StatCard label="Income This Month" value={format(stats.monthIncome)} icon={TrendingUp} tone="green" />
-        <StatCard label="Expenses This Month" value={format(stats.monthExpense)} icon={TrendingDown} tone="red" />
-        <StatCard label="Total Saved" value={format(stats.totalSaved)} icon={PiggyBank} tone="orange" />
-      </div>
+  return (
+    <div className="mx-auto max-w-5xl">
+      <h1 className="text-lg font-medium tracking-tight text-zinc-900">Dashboard</h1>
+      <p className="mt-1 text-sm text-zinc-500">Your financial overview</p>
+
+      <section className="mt-8 overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200/80">
+        <div className="px-6 pb-8 pt-7 sm:px-8 sm:pb-10 sm:pt-9">
+          <p className="text-sm text-zinc-500">Total balance</p>
+          <p className="mt-3 text-5xl font-light leading-none tracking-tight tabular-nums text-zinc-900 sm:text-6xl">
+            {format(stats.balance)}
+          </p>
+          <p className="mt-4 text-sm text-zinc-400">Across all accounts</p>
+        </div>
+
+        <div className="grid grid-cols-1 divide-y divide-zinc-200/80 border-t border-zinc-200/80 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <Stat label={`Income in ${monthLabel}`} value={`+ ${format(stats.monthIncome)}`} accent="positive" />
+          <Stat label={`Spent in ${monthLabel}`} value={`− ${format(stats.monthExpense)}`} accent="negative" />
+          <Stat label="Saved toward goals" value={format(stats.totalSaved)} />
+        </div>
+      </section>
 
       {transactions.length === 0 && (
-        <div className="mt-8 rounded-xl border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500">
-          No transactions yet. Add your first one from the "Add Transaction" tab.
-        </div>
+        <p className="mt-6 text-sm text-zinc-500">
+          Nothing tracked yet. Add your first transaction to start building this view.
+        </p>
       )}
     </div>
   );

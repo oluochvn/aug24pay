@@ -9,7 +9,6 @@ function Dashboard() {
   return (
     <div className="dashboard m-2 p-4">
       <nav className="flex items-center justify-between">
-        {/* Logo */}
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
             <Wallet size={18} />
@@ -17,7 +16,6 @@ function Dashboard() {
           <h1 className="text-sm font-semibold">paytrack</h1>
         </div>
 
-        {/* Pill tabs */}
         <ul className="flex items-center gap-2">
           {tabs.map((tab) => (
             <li key={tab}>
@@ -35,7 +33,6 @@ function Dashboard() {
           ))}
         </ul>
 
-        {/* Right actions */}
         <div className="flex items-center gap-2">
           <button className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50">
             <Settings size={16} />
@@ -54,6 +51,29 @@ function Dashboard() {
           </div>
         </div>
       </nav>
+
+      <div className="flex gap-6 m-8 mt-12">
+        <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+          <h1 className="text-sm text-gray-600">Total Balance</h1>
+          <h1 className="mt-1 text-2xl font-semibold">KSH 2000</h1>
+        </div>
+        <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+          <h1 className="text-sm text-gray-600">Income</h1>
+          <h1 className="mt-1 text-2xl font-semibold">KSH 2000</h1>
+        </div>
+        <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+          <h1 className="text-sm text-gray-600">Expense</h1>
+          <h1 className="mt-1 text-2xl font-semibold">KSH 2000</h1>
+        </div>
+      </div>
+
+      <div className="mx-8 mb-6 rounded-2xl border border-gray-200 bg-white p-4">
+        <p className="text-sm font-semibold">Recent transactions</p>
+      </div>
+
+      <div className="mx-8 rounded-2xl border border-gray-200 bg-white p-4">
+        <p className="text-sm font-semibold">Saving goals</p>
+      </div>
     </div>
   );
 }

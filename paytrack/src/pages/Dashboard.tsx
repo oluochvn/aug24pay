@@ -118,7 +118,7 @@ function Dashboard() {
               </p>
             )}
             <ul className="mt-2 divide-y divide-gray-100">
-              {data?.recentTransactions.map((t) => (
+              {data?.recentTransactions.map((t) => ( 
                 <li key={t._id} className="flex items-center justify-between py-3">
                   <div>
                     <p className="text-sm font-medium">{t.category}</p>

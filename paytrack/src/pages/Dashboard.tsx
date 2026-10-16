@@ -27,7 +27,17 @@ function Dashboard() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
-        const body = await res.json();
+        const text = await res.text();
+        let body;
+        try {
+          body = JSON.parse(text);
+        } catch {
+          throw new Error(
+            res.status === 404
+              ? "API route not found. Redeploy the backend."
+              : "Server is starting up. Try again in a minute."
+          );
+        }
         if (res.status === 401) localStorage.removeItem("token");
         if (!res.ok) throw new Error(body.message || "Could not load data");
         setData(body);
@@ -118,7 +128,7 @@ function Dashboard() {
               </p>
             )}
             <ul className="mt-2 divide-y divide-gray-100">
-              {data?.recentTransactions.map((t) => ( 
+              {data?.recentTransactions.map((t) => (
                 <li key={t._id} className="flex items-center justify-between py-3">
                   <div>
                     <p className="text-sm font-medium">{t.category}</p>

@@ -4,15 +4,39 @@ import { Settings, Bell, Wallet } from "lucide-react";
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
 const tabs = ["Dashboard", "Transactions", "Savings", "Reports"];
 
-const ksh = (n) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
-const day = (d) =>
+interface Transaction {
+  _id: string;
+  type: "income" | "expense";
+  amount: number;
+  category: string;
+  note?: string;
+  date: string;
+}
+
+interface Goal {
+  _id: string;
+  name: string;
+  targetAmount: number;
+  savedAmount: number;
+}
+
+interface Summary {
+  balance: number;
+  income: number;
+  expenses: number;
+  recentTransactions: Transaction[];
+  goals: Goal[];
+}
+
+const ksh = (n?: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
+const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short" });
 
 function Dashboard() {
   const [active, setActive] = useState("Dashboard");
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -28,7 +52,7 @@ function Dashboard() {
     })
       .then(async (res) => {
         const text = await res.text();
-        let body;
+        let body: Summary & { message?: string };
         try {
           body = JSON.parse(text);
         } catch {
@@ -42,7 +66,7 @@ function Dashboard() {
         if (!res.ok) throw new Error(body.message || "Could not load data");
         setData(body);
       })
-      .catch((err) => setError(err.message))
+      .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 

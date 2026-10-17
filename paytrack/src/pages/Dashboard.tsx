@@ -95,19 +95,28 @@ function Dashboard() {
 
       {!error && (
         <>
-          <div className="flex gap-6 m-8 mt-12">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                className="flex-1 rounded-2xl border border-gray-200 bg-white p-4"
-              >
-                <h1 className="text-sm text-gray-600">{s.label}</h1>
+            <div className="flex gap-6 m-8 mt-12">
+              <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+                <h1 className="text-sm text-gray-600">Total Balance</h1>
                 <h1 className="mt-1 text-2xl font-semibold">
-                  {loading ? "..." : ksh(s.value)}
+                  {loading ? "..." : ksh(data?.balance)}
                 </h1>
               </div>
-            ))}
-          </div>
+
+              <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+                <h1 className="text-sm text-gray-600">Income</h1>
+                <h1 className="mt-1 text-2xl font-semibold text-black">
+                  {loading ? "..." : ksh(data?.income)}
+                </h1>
+              </div>
+
+              <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+                <h1 className="text-sm text-gray-600">Expense</h1>
+                <h1 className="mt-1 text-2xl font-semibold text-[#eb1f25]">
+                  {loading ? "..." : ksh(data?.expenses)}
+                </h1>
+              </div>
+            </div>
 
           <div className="mx-8 mb-6 rounded-2xl border border-gray-200 bg-white p-4">
             <p className="text-sm font-semibold">Recent transactions</p>

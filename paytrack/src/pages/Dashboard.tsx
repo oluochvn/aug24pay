@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
-import { Settings, Bell, Wallet } from "lucide-react";
+import { NavLink } from "react-router-dom";
+import { Wallet, Bell, Settings } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
-const tabs = ["Dashboard", "Transactions", "Savings", "Reports"];
 
 const ksh = (n) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
 const day = (d) =>
   new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short" });
 
+const linkClass = ({ isActive }) =>
+  `rounded-full px-4 py-1.5 text-sm transition-colors ${
+    isActive ? "bg-black text-white" : "text-gray-600 hover:bg-gray-100"
+  }`;
+
 function Dashboard() {
-  const [active, setActive] = useState("Dashboard");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,56 +40,59 @@ function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const stats = [
-    { label: "Total Balance", value: data?.balance },
-    { label: "Income", value: data?.income },
-    { label: "Expense", value: data?.expenses },
-  ];
-
   const username = data?.user?.username || "";
-  const initial = username ? username.charAt(0).toUpperCase() : "U";
 
   return (
     <div className="dashboard m-2 p-4">
-      <nav className="flex items-center justify-between m-8">
+      <div className="flex items-center justify-between m-8">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
             <Wallet size={18} />
           </div>
-          <h1 className="text-sm font-semibold">paytrack</h1>
+          <span className="text-sm font-semibold">paytrack</span>
         </div>
 
-        <ul className="flex items-center gap-2">
-          {tabs.map((tab) => (
-            <li key={tab}>
-              <button
-                onClick={() => setActive(tab)}
-                className={`rounded-full  px-4 py-1.5 text-sm transition-colors ${
-                  active === tab
-                    ? "border-black bg-black text-white "
-                    : " text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {tab}
-              </button>
-            </li>
-          ))}
-        </ul>
-
         <div className="flex items-center gap-2">
+          <NavLink to="/" end className={linkClass}>
+            Dashboard
+          </NavLink>
+          <NavLink to="/transactions" className={linkClass}>
+            Transactions
+          </NavLink>
+          <NavLink to="/savings" className={linkClass}>
+            Savings
+          </NavLink>
+          <NavLink to="/reports" className={linkClass}>
+            Reports
+          </NavLink>
+        </div>
 
-
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="text-gray-600 hover:text-black"
+            aria-label="Notifications"
+          >
+            <Bell size={18} />
+          </button>
+          <NavLink
+            to="/settings"
+            className="text-gray-600 hover:text-black"
+            aria-label="Settings"
+          >
+            <Settings size={18} />
+          </NavLink>
           <div className="relative">
             <div
               title={username}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white text-xs font-medium"
             >
-              {initial}
+              {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500" />
           </div>
         </div>
-      </nav>
+      </div>
 
       {error && (
         <div className="mx-8 mt-12 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-600">
@@ -95,28 +102,28 @@ function Dashboard() {
 
       {!error && (
         <>
-            <div className="flex gap-6 m-8 mt-12">
-              <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
-                <h1 className="text-sm text-gray-600">Total Balance</h1>
-                <h1 className="mt-1 text-2xl font-semibold">
-                  {loading ? "..." : ksh(data?.balance)}
-                </h1>
-              </div>
-
-              <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
-                <h1 className="text-sm text-gray-600">Income</h1>
-                <h1 className="mt-1 text-2xl font-semibold text-black">
-                  {loading ? "..." : ksh(data?.income)}
-                </h1>
-              </div>
-
-              <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
-                <h1 className="text-sm text-gray-600">Expense</h1>
-                <h1 className="mt-1 text-2xl font-semibold text-[#eb1f25]">
-                  {loading ? "..." : ksh(data?.expenses)}
-                </h1>
-              </div>
+          <div className="flex gap-6 m-8 mt-12">
+            <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+              <h1 className="text-sm text-gray-600">Total Balance</h1>
+              <h1 className="mt-1 text-2xl font-semibold">
+                {loading ? "..." : ksh(data?.balance)}
+              </h1>
             </div>
+
+            <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+              <h1 className="text-sm text-gray-600">Income</h1>
+              <h1 className="mt-1 text-2xl font-semibold text-black">
+                {loading ? "..." : ksh(data?.income)}
+              </h1>
+            </div>
+
+            <div className="flex-1 rounded-2xl border border-gray-200 bg-white p-4">
+              <h1 className="text-sm text-gray-600">Expense</h1>
+              <h1 className="mt-1 text-2xl font-semibold text-[#eb1f25]">
+                {loading ? "..." : ksh(data?.expenses)}
+              </h1>
+            </div>
+          </div>
 
           <div className="mx-8 mb-6 rounded-2xl border border-gray-200 bg-white p-4">
             <p className="text-sm font-semibold">Recent transactions</p>

@@ -4,17 +4,42 @@ import { Wallet, Bell, Settings } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
 
-const ksh = (n) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
-const day = (d) =>
+interface Transaction {
+  _id: string;
+  type: "income" | "expense";
+  amount: number;
+  category: string;
+  note?: string;
+  date: string;
+}
+
+interface Goal {
+  _id: string;
+  name: string;
+  savedAmount: number;
+  targetAmount: number;
+}
+
+interface Summary {
+  user?: { username?: string };
+  balance: number;
+  income: number;
+  expenses: number;
+  recentTransactions: Transaction[];
+  goals: Goal[];
+}
+
+const ksh = (n?: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
+const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short" });
 
-const linkClass = ({ isActive }) =>
+const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-full px-4 py-1.5 text-sm transition-colors ${
     isActive ? "bg-black text-white" : "text-gray-600 hover:bg-gray-100"
   }`;
 
 function Dashboard() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -34,9 +59,9 @@ function Dashboard() {
         const body = await res.json();
         if (res.status === 401) localStorage.removeItem("token");
         if (!res.ok) throw new Error(body.message || "Could not load data");
-        setData(body);
+        setData(body as Summary);
       })
-      .catch((err) => setError(err.message))
+      .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -45,15 +70,15 @@ function Dashboard() {
   return (
     <div className="dashboard m-2 p-4">
       <div className="flex items-center justify-between m-8">
-        <div className="flex items-center gap-2">
+        <NavLink to="/dashboard" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
-        </div>
+        </NavLink>
 
         <div className="flex items-center gap-2">
-          <NavLink to="/" end className={linkClass}>
+          <NavLink to="/dashboard" className={linkClass}>
             Dashboard
           </NavLink>
           <NavLink to="/transactions" className={linkClass}>

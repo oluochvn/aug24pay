@@ -1,8 +1,9 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, type CSSProperties } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Wallet, Bell, Settings } from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
+const TX = "/transactions";
 
 type TxType = "income" | "expense";
 
@@ -47,7 +48,10 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 const inputClass =
-  "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-black";
+  "rounded-xl border border-gray-200 bg-white text-sm outline-none focus:border-black";
+
+const inputStyle: CSSProperties = { padding: "8px 12px" };
+const buttonStyle: CSSProperties = { padding: "8px 20px" };
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
@@ -60,9 +64,10 @@ async function request(path: string, options: RequestInit = {}) {
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw Object.assign(new Error(body.message || "Request failed"), {
-      status: res.status,
-    });
+    throw Object.assign(
+      new Error(body.message || `Request failed (${res.status})`),
+      { status: res.status }
+    );
   }
   return body;
 }
@@ -88,7 +93,7 @@ function Transactions() {
 
   const load = async () => {
     try {
-      const body = await request("/transactions");
+      const body = await request(TX);
       setItems(Array.isArray(body) ? body : body.transactions ?? []);
     } catch (err) {
       handleError(err);
@@ -128,12 +133,12 @@ function Transactions() {
 
     try {
       if (editingId) {
-        await request(`/transactions/${editingId}`, {
+        await request(`${TX}/${editingId}`, {
           method: "PUT",
           body: JSON.stringify(payload),
         });
       } else {
-        await request("/transactions", {
+        await request(TX, {
           method: "POST",
           body: JSON.stringify(payload),
         });
@@ -163,7 +168,7 @@ function Transactions() {
     if (!window.confirm("Delete this transaction?")) return;
     setError("");
     try {
-      await request(`/transactions/${id}`, { method: "DELETE" });
+      await request(`${TX}/${id}`, { method: "DELETE" });
       if (editingId === id) reset();
       setItems((list) => list.filter((t) => t._id !== id));
     } catch (err) {
@@ -222,11 +227,12 @@ function Transactions() {
           {editingId ? "Edit transaction" : "Add transaction"}
         </p>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-5">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <select
             value={form.type}
             onChange={(e) => update("type", e.target.value)}
-            className={inputClass}
+            style={inputStyle}
+            className={`${inputClass} w-32 shrink-0`}
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
@@ -240,7 +246,8 @@ function Transactions() {
             placeholder="Amount"
             value={form.amount}
             onChange={(e) => update("amount", e.target.value)}
-            className={inputClass}
+            style={inputStyle}
+            className={`${inputClass} w-32 shrink-0`}
           />
 
           <input
@@ -249,7 +256,8 @@ function Transactions() {
             placeholder="Category"
             value={form.category}
             onChange={(e) => update("category", e.target.value)}
-            className={inputClass}
+            style={inputStyle}
+            className={`${inputClass} min-w-0 flex-1 basis-40`}
           />
 
           <input
@@ -257,7 +265,8 @@ function Transactions() {
             placeholder="Note (optional)"
             value={form.note}
             onChange={(e) => update("note", e.target.value)}
-            className={inputClass}
+            style={inputStyle}
+            className={`${inputClass} min-w-0 flex-1 basis-48`}
           />
 
           <input
@@ -265,30 +274,34 @@ function Transactions() {
             required
             value={form.date}
             onChange={(e) => update("date", e.target.value)}
-            className={inputClass}
+            style={inputStyle}
+            className={`${inputClass} w-40 shrink-0`}
           />
         </div>
+
+        {error && <p className="mt-3 text-sm text-[#eb1f25]">{error}</p>}
 
         <div className="mt-4 flex items-center gap-2">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-black px-5 py-2 text-sm text-white disabled:opacity-50"
+            style={buttonStyle}
+            className="rounded-full bg-black text-sm text-white disabled:opacity-50"
           >
             {saving ? "Saving..." : editingId ? "Update" : "Add"}
           </button>
+
           {editingId && (
             <button
               type="button"
               onClick={reset}
-              className="rounded-full px-5 py-2 text-sm text-gray-600 hover:bg-gray-100"
+              style={buttonStyle}
+              className="rounded-full text-sm text-gray-600 hover:bg-gray-100"
             >
               Cancel
             </button>
           )}
         </div>
-
-        {error && <p className="mt-3 text-sm text-[#eb1f25]">{error}</p>}
       </form>
 
       <div className="mx-8 mt-6 rounded-2xl border border-gray-200 bg-white p-4">
@@ -304,8 +317,12 @@ function Transactions() {
 
         <ul className="mt-2 divide-y divide-gray-100">
           {items.map((t) => (
-            <li key={t._id} className="flex items-center justify-between py-3">
-              <div>
+            <li
+              key={t._id}
+              style={{ padding: "12px 0" }}
+              className="flex items-center justify-between"
+            >
+              <div className="min-w-0">
                 <p className="text-sm font-medium">{t.category}</p>
                 <p className="text-xs text-gray-600">
                   {t.note ? `${t.note} · ` : ""}
@@ -313,29 +330,35 @@ function Transactions() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div style={{ gap: 20 }} className="flex shrink-0 items-center">
                 <span
+                  style={{ minWidth: 110, textAlign: "right" }}
                   className={`text-sm font-medium ${
-                    t.type === "income" ? "text-indigo-700" : "text-gray-800"
+                    t.type === "income" ? "text-green-600" : "text-[#eb1f25]"
                   }`}
                 >
                   {t.type === "income" ? "+" : "-"}
                   {ksh(t.amount)}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => startEdit(t)}
-                  className="text-xs text-gray-600 hover:text-black"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => remove(t._id)}
-                  className="text-xs text-[#eb1f25] hover:underline"
-                >
-                  Delete
-                </button>
+
+                <div style={{ gap: 8 }} className="flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(t)}
+                    style={{ padding: "4px 12px" }}
+                    className="rounded-full border border-gray-200 text-xs text-gray-700 hover:bg-gray-100"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(t._id)}
+                    style={{ padding: "4px 12px" }}
+                    className="rounded-full border border-red-200 text-xs text-[#eb1f25] hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </li>
           ))}

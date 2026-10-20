@@ -80,6 +80,7 @@ function Transactions() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState("");
 
   const handleError = (err: unknown) => {
     const e = err as Error & { status?: number };
@@ -103,11 +104,17 @@ function Transactions() {
   };
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    const token = localStorage.getItem("token");
+    if (!token) {
       navigate("/login", { replace: true });
       return;
     }
     load();
+
+    fetch(`${API}/summary`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => setUsername(body?.user?.username || ""))
+      .catch(() => {});
   }, []);
 
   const update = (field: keyof FormState, value: string) =>
@@ -216,6 +223,15 @@ function Transactions() {
           >
             <Settings size={18} />
           </NavLink>
+          <div className="relative">
+            <div
+              title={username}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white text-xs font-medium"
+            >
+              {username ? username.charAt(0).toUpperCase() : "U"}
+            </div>
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500" />
+          </div>
         </div>
       </div>
 

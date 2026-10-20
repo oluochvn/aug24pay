@@ -330,7 +330,7 @@ function Transactions() {
             No transactions yet. Add your first one above.
           </p>
         )}
-    //pushed
+
         <ul className="mt-2 divide-y divide-gray-100">
           {items.map((t) => (
             <li

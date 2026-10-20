@@ -13,9 +13,6 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/transactions" element={<Transactions />} />
-      <Route path="/savings" element={<div className="m-8">Savings</div>} />
-      <Route path="/reports" element={<div className="m-8">Reports</div>} />
-      <Route path="/settings" element={<div className="m-8">Settings</div>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

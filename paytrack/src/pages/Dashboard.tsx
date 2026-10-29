@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Wallet, Bell, Settings } from "lucide-react";
-
-const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
+import { useApi } from "../lib/useApi";
 
 interface Transaction {
   _id: string;
@@ -39,31 +37,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 function Dashboard() {
-  const [data, setData] = useState<Summary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setError("Please log in to see your dashboard");
-      setLoading(false);
-      return;
-    }
-
-    fetch(`${API}/summary`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        const body = await res.json();
-        if (res.status === 401) localStorage.removeItem("token");
-        if (!res.ok) throw new Error(body.message || "Could not load data");
-        setData(body as Summary);
-      })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, loading, error } = useApi<Summary>("/summary");
 
   const username = data?.user?.username || "";
 
@@ -119,13 +93,13 @@ function Dashboard() {
         </div>
       </div>
 
-      {error && (
+      {error && !data && (
         <div className="mx-3 mt-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-gray-400 sm:mx-4 md:mx-8 md:mt-12">
           {error}
         </div>
       )}
 
-      {!error && (
+      {(!error || data) && (
         <>
           <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-12 md:grid-cols-3 md:gap-6">
             <div className="col-span-2 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 md:col-span-1">

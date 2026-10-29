@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Transactions from "./pages/Transactions";
 import Savings from "./pages/Saving";
-
+import Reports from "./pages/Report";
 export default function App() {
   return (
     <Routes>
@@ -13,7 +13,8 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/transactions" element={<Transactions />} />
-      <Route path="/saving" element={<Savings />} />
+      <Route path="/savings" element={<Savings />} />
+      <Route path="/reports" element={<Reports />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

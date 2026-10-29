@@ -52,6 +52,11 @@ const inputClass =
 const pillButton =
   "rounded-full bg-indigo-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-indigo-400 disabled:opacity-50";
 
+const outlineButton =
+  "rounded-full border border-neutral-700 px-3 py-1 text-xs text-gray-300 transition-colors hover:bg-neutral-800 disabled:opacity-50";
+const dangerButton =
+  "rounded-full border border-red-900 px-3 py-1 text-xs text-[#ff4d52] transition-colors hover:bg-red-950 disabled:opacity-50";
+
 function Savings() {
   const { data, loading, error: loadError, update } = useApi<Goal[]>("/goals");
   const goals = data ?? [];
@@ -61,6 +66,9 @@ function Savings() {
   const [target, setTarget] = useState("");
   const [deposits, setDeposits] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editTarget, setEditTarget] = useState("");
 
   const shownError = error || (loadError && !data ? loadError : "");
 
@@ -95,6 +103,49 @@ function Savings() {
       update(goals.map((g) => (g._id === id ? updated : g)));
       invalidate("/summary");
       setDeposits((prev) => ({ ...prev, [id]: "" }));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const startEdit = (g: Goal) => {
+    setEditingId(g._id);
+    setEditName(g.name);
+    setEditTarget(String(g.targetAmount));
+    setError("");
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const saveEdit = async (id: string) => {
+    setBusy(true);
+    setError("");
+    try {
+      const updated = await api<Goal>(`/goals/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name: editName, targetAmount: Number(editTarget) }),
+      });
+      update(goals.map((g) => (g._id === id ? updated : g)));
+      invalidate("/summary");
+      setEditingId(null);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeGoal = async (id: string) => {
+    if (!window.confirm("Delete this goal?")) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api<{ message: string }>(`/goals/${id}`, { method: "DELETE" });
+      update(goals.filter((g) => g._id !== id));
+      invalidate("/summary");
+      if (editingId === id) setEditingId(null);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -221,19 +272,48 @@ function Savings() {
               );
               return (
                 <li key={g._id} className="py-4">
-                  <div className="mb-2 flex items-center justify-between text-sm">
-                    <span className="font-medium">{g.name}</span>
-                    <span className="text-gray-400">
-                      {ksh(g.savedAmount)} of {ksh(g.targetAmount)} · {pct}%
-                    </span>
-                  </div>
+                  {editingId === g._id ? (
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <input
+                        className={`${inputClass} min-w-0 flex-1`}
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="Goal name"
+                      />
+                      <input
+                        className={`${inputClass} w-40`}
+                        type="number"
+                        min="1"
+                        value={editTarget}
+                        onChange={(e) => setEditTarget(e.target.value)}
+                        placeholder="Target (KSH)"
+                      />
+                      <button
+                        className={pillButton}
+                        disabled={busy || !editName.trim() || !Number(editTarget)}
+                        onClick={() => saveEdit(g._id)}
+                      >
+                        Save
+                      </button>
+                      <button className={outlineButton} onClick={cancelEdit}>
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                      <span className="truncate font-medium">{g.name}</span>
+                      <span className="shrink-0 text-gray-400">
+                        {ksh(g.savedAmount)} of {ksh(g.targetAmount)} · {pct}%
+                      </span>
+                    </div>
+                  )}
                   <div className="h-2 w-full rounded-full bg-neutral-800">
                     <div
                       className="h-2 rounded-full bg-indigo-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <div className="mt-3 flex items-center gap-2">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     <input
                       className={`${inputClass} w-40`}
                       type="number"
@@ -251,6 +331,22 @@ function Savings() {
                     >
                       Add money
                     </button>
+                    <div className="ml-auto flex items-center gap-2">
+                      <button
+                        className={outlineButton}
+                        disabled={busy}
+                        onClick={() => startEdit(g)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className={dangerButton}
+                        disabled={busy}
+                        onClick={() => removeGoal(g._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </li>
               );

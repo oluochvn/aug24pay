@@ -1,7 +1,6 @@
-import { useState, type FormEvent, type CSSProperties } from "react";
+import { useState, useEffect, type FormEvent, type CSSProperties } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Wallet, Bell, Settings } from "lucide-react";
-import { useApi, invalidate } from "../lib/useApi";
 
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
 const TX = "/transactions";
@@ -16,8 +15,6 @@ interface Transaction {
   note?: string;
   date: string;
 }
-
-type TxResponse = Transaction[] | { transactions: Transaction[] };
 
 interface FormState {
   type: TxType;
@@ -77,23 +74,13 @@ async function request(path: string, options: RequestInit = {}) {
 
 function Transactions() {
   const navigate = useNavigate();
-
-  const {
-    data: raw,
-    loading,
-    error: loadError,
-    refresh,
-    update: setCache,
-  } = useApi<TxResponse>(TX);
-  const { data: summary } = useApi<{ user?: { username?: string } }>("/summary");
-
-  const items: Transaction[] = Array.isArray(raw) ? raw : raw?.transactions ?? [];
-  const username = summary?.user?.username || "";
-
+  const [items, setItems] = useState<Transaction[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState("");
 
   const handleError = (err: unknown) => {
     const e = err as Error & { status?: number };
@@ -104,6 +91,31 @@ function Transactions() {
     }
     setError(e.message);
   };
+
+  const load = async () => {
+    try {
+      const body = await request(TX);
+      setItems(Array.isArray(body) ? body : body.transactions ?? []);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+    load();
+
+    fetch(`${API}/summary`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => setUsername(body?.user?.username || ""))
+      .catch(() => {});
+  }, []);
 
   const update = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -139,9 +151,7 @@ function Transactions() {
         });
       }
       reset();
-      invalidate("/summary");
-      invalidate("/reports");
-      await refresh();
+      await load();
     } catch (err) {
       handleError(err);
     } finally {
@@ -167,10 +177,7 @@ function Transactions() {
     try {
       await request(`${TX}/${id}`, { method: "DELETE" });
       if (editingId === id) reset();
-      const remaining = items.filter((t) => t._id !== id);
-      setCache(Array.isArray(raw) ? remaining : { transactions: remaining });
-      invalidate("/summary");
-      invalidate("/reports");
+      setItems((list) => list.filter((t) => t._id !== id));
     } catch (err) {
       handleError(err);
     }
@@ -318,11 +325,7 @@ function Transactions() {
 
         {loading && <p className="mt-3 text-sm text-gray-400">Loading...</p>}
 
-        {loadError && !raw && (
-          <p className="mt-3 text-sm text-[#ff4d52]">{loadError}</p>
-        )}
-
-        {!loading && !loadError && items.length === 0 && (
+        {!loading && items.length === 0 && (
           <p className="mt-3 text-sm text-gray-400">
             No transactions yet. Add your first one above.
           </p>

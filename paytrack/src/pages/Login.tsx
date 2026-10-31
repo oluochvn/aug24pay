@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, AlertCircle, Triangle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Wallet } from "lucide-react";
+
+const inputClass =
+  "w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
@@ -66,40 +69,39 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-black">
-      <header className="flex items-center gap-2 px-6 py-5">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
-          <Triangle
-            className="h-3.5 w-3.5 fill-black text-black"
-            strokeWidth={0}
-          />
+    <div
+      className="relative min-h-screen w-full overflow-hidden bg-[#F2F2F2] text-[#111827]"
+      style={{ colorScheme: "light" }}
+    >
+      {/* Soft background glows, same palette as the dashboard */}
+      <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-indigo-300/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-emerald-300/30 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-fuchsia-200/30 blur-3xl" />
+
+      <header className="relative flex items-center gap-2 px-6 py-5 sm:px-10">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white">
+          <Wallet size={18} />
         </div>
 
-        <span className="text-lg font-semibold tracking-tight text-white">
-          Paytrack
-        </span>
+        <span className="text-sm font-semibold">paytrack</span>
       </header>
 
-      <main className="flex justify-center px-4 pt-16">
-        <div className="w-full max-w-sm">
+      <main className="relative flex justify-center px-4 pb-10 pt-6 sm:pt-12">
+        <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(17,24,39,0.35)] sm:p-8">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-white">
-              Welcome back!
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Welcome back
             </h1>
 
-            <p className="mt-1 text-sm text-neutral-400">
-              Log in to your{" "}
-              <span className="font-medium text-neutral-200">
-                paytrack
-              </span>{" "}
-              account
+            <p className="mt-1 text-sm text-gray-500">
+              Log in to your paytrack account
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-700 py-2.5 text-sm font-medium text-neutral-100 transition-colors hover:bg-neutral-900"
+            className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 bg-white py-3 text-sm font-medium text-[#111827] transition-colors hover:bg-neutral-50"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -127,30 +129,28 @@ export default function Login() {
           </button>
 
           <div className="mt-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-neutral-700" />
+            <div className="h-px flex-1 bg-neutral-200" />
 
-            <span className="text-xs text-neutral-500">
-              OR
-            </span>
+            <span className="text-xs text-gray-400">or</span>
 
-            <div className="h-px flex-1 bg-neutral-700" />
+            <div className="h-px flex-1 bg-neutral-200" />
           </div>
 
           {error && (
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-sm text-red-400">
-              <AlertCircle className="h-4 w-4 shrink-0" />
+            <div
+              role="alert"
+              className="mt-5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-3 text-sm text-red-600"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          <form
-            onSubmit={handleSubmit}
-            className="mt-6 space-y-4"
-          >
+          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
               <label
                 htmlFor="email"
-                className="mb-1.5 block text-sm font-medium text-neutral-300"
+                className="mb-1.5 block text-xs font-medium text-gray-600"
               >
                 Email
               </label>
@@ -159,42 +159,50 @@ export default function Login() {
                 required
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email address"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="mb-1.5 block text-sm font-medium text-neutral-300"
-              >
-                Password
-              </label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-medium text-gray-600"
+                >
+                  Password
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => navigate("/forgot-password")}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
 
               <div className="relative">
                 <input
                   required
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none focus:border-[#0014A8] focus:ring-1 focus:ring-[#0014A8]"
+                  className={`${inputClass} pr-11`}
                 />
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword((value) => !value)
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#111827]"
                   aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
+                    showPassword ? "Hide password" : "Show password"
                   }
                 >
                   {showPassword ? (
@@ -206,40 +214,27 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="text-sm text-neutral-400">
-              Forgot your password?{" "}
-              <button
-                type="button"
-                onClick={() => navigate("/forgot-password")}
-                className="text-[#007BFF] hover:underline"
-              >
-                Reset
-              </button>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-[#1546D9] py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1929B7]/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-xl bg-[#111827] py-3 text-sm font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-neutral-500">
-            Don't have an account?
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/register")}
-            className="mt-3 w-full rounded-lg border border-neutral-700 py-2.5 text-sm font-medium text-neutral-200 transition-colors hover:bg-neutral-900"
-          >
-            Sign up
-          </button>
+          <p className="mt-6 text-center text-sm text-gray-500">
+            Don't have an account?{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/register")}
+              className="font-medium text-[#111827] hover:underline"
+            >
+              Sign up
+            </button>
+          </p>
         </div>
       </main>
     </div>
   );
 }
-

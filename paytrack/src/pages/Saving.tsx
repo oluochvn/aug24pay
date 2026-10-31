@@ -1,9 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { NavLink } from "react-router-dom";
-import { Wallet, Bell, Settings } from "lucide-react";
+import {
+  Wallet,
+  Settings,
+  LayoutDashboard,
+  ArrowLeftRight,
+  PiggyBank,
+  BarChart3,
+} from "lucide-react";
 import { useApi, invalidate } from "../lib/useApi";
-
-const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
 
 interface Goal {
   _id: string;
@@ -12,350 +17,642 @@ interface Goal {
   savedAmount: number;
 }
 
-const ksh = (n?: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
-
-async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const text = await res.text();
-  let body: { message?: string };
-  try {
-    body = JSON.parse(text);
-  } catch {
-    throw new Error(
-      res.status === 404
-        ? "API route not found. Redeploy the backend."
-        : "Server is starting up. Try again in a minute."
-    );
-  }
-
-  if (res.status === 401) localStorage.removeItem("token");
-  if (!res.ok) throw new Error(body.message || "Something went wrong");
-  return body as unknown as T;
+interface Summary {
+  user?: { username?: string };
 }
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
+
+const menu = [
+  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
+  { label: "Savings", to: "/savings", icon: PiggyBank },
+  { label: "Reports", to: "/reports", icon: BarChart3 },
+];
+
+const sideLink = ({ isActive }: { isActive: boolean }) =>
+  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+    isActive
+      ? "bg-white font-medium text-[#111827] shadow-sm"
+      : "text-gray-500 hover:bg-white/60"
+  }`;
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-    isActive ? "bg-white text-black" : "text-gray-400 hover:bg-neutral-800"
+    isActive ? "bg-[#111827] text-white" : "bg-white text-gray-600"
   }`;
 
-const inputClass =
-  "rounded-full border border-neutral-800 bg-neutral-950 px-4 py-1.5 text-sm text-gray-100 placeholder-gray-500 outline-none focus:border-indigo-400";
-const pillButton =
-  "rounded-full bg-indigo-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-indigo-400 disabled:opacity-50";
+const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 
-const outlineButton =
-  "rounded-full border border-neutral-700 px-3 py-1 text-xs text-gray-300 transition-colors hover:bg-neutral-800 disabled:opacity-50";
-const dangerButton =
-  "rounded-full border border-red-900 px-3 py-1 text-xs text-[#ff4d52] transition-colors hover:bg-red-950 disabled:opacity-50";
+const formatMoney = (amount: number) =>
+  `KSH ${Number(amount || 0).toLocaleString("en-KE")}`;
 
-function Savings() {
-  const { data, loading, error: loadError, update } = useApi<Goal[]>("/goals");
+async function apiRequest<T>(
+  endpoint: string,
+  method = "GET",
+  body?: unknown
+): Promise<T> {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Session expired. Please log in again.");
+  }
+
+  const result = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      result?.message ||
+        result?.error ||
+        "Something went wrong. Please try again."
+    );
+  }
+
+  return result as T;
+}
+
+export default function Savings() {
+  const { data, loading, error, update } = useApi<Goal[]>("/goals");
+  const { data: summary } = useApi<Summary>("/summary");
+
+  const username = summary?.user?.username || "";
+
   const goals = data ?? [];
 
-  const [error, setError] = useState("");
   const [name, setName] = useState("");
-  const [target, setTarget] = useState("");
-  const [deposits, setDeposits] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
+  const [targetAmount, setTargetAmount] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editTarget, setEditTarget] = useState("");
 
-  const shownError = error || (loadError && !data ? loadError : "");
+  const [depositId, setDepositId] = useState<string | null>(null);
+  const [depositAmount, setDepositAmount] = useState("");
 
-  const createGoal = async (e: FormEvent) => {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [formError, setFormError] = useState("");
+
+  const totalSaved = goals.reduce(
+    (total, goal) => total + Number(goal.savedAmount || 0),
+    0
+  );
+
+  const totalTarget = goals.reduce(
+    (total, goal) => total + Number(goal.targetAmount || 0),
+    0
+  );
+
+  const remaining = Math.max(totalTarget - totalSaved, 0);
+
+  const overallProgress =
+    totalTarget > 0
+      ? Math.min((totalSaved / totalTarget) * 100, 100)
+      : 0;
+
+  const resetForm = () => {
+    setName("");
+    setTargetAmount("");
+    setEditingId(null);
+    setFormError("");
+  };
+
+  const refreshSummary = async () => {
+    await invalidate("/summary");
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    setFormError("");
+    setMessage("");
+
+    const amount = Number(targetAmount);
+
+    if (!name.trim()) {
+      setFormError("Enter a savings goal name.");
+      return;
+    }
+
+    if (!Number.isFinite(amount) || amount < 1) {
+      setFormError("Enter a valid target amount.");
+      return;
+    }
+
     setBusy(true);
-    setError("");
+
     try {
-      const goal = await api<Goal>("/goals", {
-        method: "POST",
-        body: JSON.stringify({ name, targetAmount: Number(target) }),
-      });
-      update([goal, ...goals]);
-      invalidate("/summary");
-      setName("");
-      setTarget("");
+      if (editingId) {
+        const updatedGoal = await apiRequest<Goal>(
+          `/goals/${editingId}`,
+          "PUT",
+          {
+            name: name.trim(),
+            targetAmount: amount,
+          }
+        );
+
+        update(
+          goals.map((goal) =>
+            goal._id === editingId ? { ...goal, ...updatedGoal } : goal
+          )
+        );
+
+        setMessage("Goal updated.");
+      } else {
+        const newGoal = await apiRequest<Goal>("/goals", "POST", {
+          name: name.trim(),
+          targetAmount: amount,
+        });
+
+        update([...goals, newGoal]);
+
+        setMessage("Savings goal created.");
+      }
+
+      resetForm();
+      await refreshSummary();
     } catch (err) {
-      setError((err as Error).message);
+      setFormError(
+        err instanceof Error ? err.message : "Unable to save goal."
+      );
     } finally {
       setBusy(false);
     }
   };
 
-  const addMoney = async (id: string) => {
+  const handleEdit = (goal: Goal) => {
+    setEditingId(goal._id);
+    setName(goal.name);
+    setTargetAmount(String(goal.targetAmount));
+    setFormError("");
+    setMessage("");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDeposit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!depositId) return;
+
+    const amount = Number(depositAmount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setFormError("Enter a valid deposit amount.");
+      return;
+    }
+
+    const selectedGoal = goals.find((goal) => goal._id === depositId);
+
+    if (!selectedGoal) return;
+
     setBusy(true);
-    setError("");
+    setFormError("");
+    setMessage("");
+
     try {
-      const updated = await api<Goal>(`/goals/${id}/deposit`, {
-        method: "PATCH",
-        body: JSON.stringify({ amount: Number(deposits[id]) }),
-      });
-      update(goals.map((g) => (g._id === id ? updated : g)));
-      invalidate("/summary");
-      setDeposits((prev) => ({ ...prev, [id]: "" }));
+      const updatedGoal = await apiRequest<Goal>(
+        `/goals/${depositId}/deposit`,
+        "PATCH",
+        { amount }
+      );
+
+      update(
+        goals.map((goal) =>
+          goal._id === depositId ? { ...goal, ...updatedGoal } : goal
+        )
+      );
+
+      setDepositId(null);
+      setDepositAmount("");
+      setMessage("Deposit added.");
+
+      await refreshSummary();
     } catch (err) {
-      setError((err as Error).message);
+      setFormError(
+        err instanceof Error ? err.message : "Unable to add deposit."
+      );
     } finally {
       setBusy(false);
     }
   };
 
-  const startEdit = (g: Goal) => {
-    setEditingId(g._id);
-    setEditName(g.name);
-    setEditTarget(String(g.targetAmount));
-    setError("");
-  };
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this savings goal?"
+    );
 
-  const cancelEdit = () => setEditingId(null);
+    if (!confirmed) return;
 
-  const saveEdit = async (id: string) => {
     setBusy(true);
-    setError("");
+    setFormError("");
+    setMessage("");
+
     try {
-      const updated = await api<Goal>(`/goals/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ name: editName, targetAmount: Number(editTarget) }),
-      });
-      update(goals.map((g) => (g._id === id ? updated : g)));
-      invalidate("/summary");
-      setEditingId(null);
+      await apiRequest(`/goals/${id}`, "DELETE");
+
+      update(goals.filter((goal) => goal._id !== id));
+
+      if (editingId === id) resetForm();
+
+      if (depositId === id) {
+        setDepositId(null);
+        setDepositAmount("");
+      }
+
+      setMessage("Savings goal deleted.");
+      await refreshSummary();
     } catch (err) {
-      setError((err as Error).message);
+      setFormError(
+        err instanceof Error ? err.message : "Unable to delete goal."
+      );
     } finally {
       setBusy(false);
     }
   };
-
-  const removeGoal = async (id: string) => {
-    if (!window.confirm("Delete this goal?")) return;
-    setBusy(true);
-    setError("");
-    try {
-      await api<{ message: string }>(`/goals/${id}`, { method: "DELETE" });
-      update(goals.filter((g) => g._id !== id));
-      invalidate("/summary");
-      if (editingId === id) setEditingId(null);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const totalSaved = goals.reduce((sum, g) => sum + g.savedAmount, 0);
-  const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
 
   return (
-    <div className="dashboard min-h-screen bg-neutral-950 p-2 pb-6 text-gray-100 sm:p-4">
-      <div className="m-3 flex flex-wrap items-center justify-between gap-3 sm:m-4 md:m-8 md:flex-nowrap">
-        <NavLink to="/dashboard" className="order-1 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+    <div className="dashboard min-h-screen bg-[#F2F2F2] text-[#111827] lg:flex">
+      {/* Desktop sidebar */}
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
+        <NavLink to="/dashboard" className="flex items-center gap-2 px-1">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </NavLink>
 
-        <div className="order-3 -mx-1 flex w-full items-center gap-2 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:w-auto md:overflow-visible md:px-0 md:pb-0">
-          <NavLink to="/dashboard" className={linkClass}>
-            Dashboard
-          </NavLink>
-          <NavLink to="/transactions" className={linkClass}>
-            Transactions
-          </NavLink>
-          <NavLink to="/savings" className={linkClass}>
-            Savings
-          </NavLink>
-          <NavLink to="/reports" className={linkClass}>
-            Reports
-          </NavLink>
-        </div>
+        <nav className="mt-8 space-y-1">
+          {menu.map(({ label, to, icon: Icon }) => (
+            <NavLink key={to} to={to} className={sideLink}>
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
 
-        <div className="order-2 flex items-center gap-3 md:order-3">
-          <button
-            type="button"
-            className="p-1 text-gray-400 hover:text-white"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-          </button>
-          <NavLink
-            to="/settings"
-            className="p-1 text-gray-400 hover:text-white"
-            aria-label="Settings"
-          >
+        <div className="mt-auto space-y-1">
+          <NavLink to="/settings" className={sideLink}>
             <Settings size={18} />
+            Settings
           </NavLink>
-          <div className="relative">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-800 text-white text-xs font-medium">
-              U
+
+          <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
+            <div
+              title={username}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-medium text-white"
+            >
+              {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
-            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-neutral-950 bg-green-500" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {username || "Your account"}
+              </p>
+              <p className="text-xs text-gray-500">Personal account</p>
+            </div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div className="mx-3 mt-6 space-y-4 sm:mx-4 md:mx-8 md:mt-12 md:space-y-6">
-        <div className="grid grid-cols-2 gap-3 md:gap-6">
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
-            <h1 className="text-sm text-gray-400">Total saved</h1>
-            <h1 className="mt-1 break-words text-lg font-semibold sm:text-2xl">
-              {loading ? "..." : ksh(totalSaved)}
-            </h1>
+      {/* Main content */}
+      <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
+        {/* Mobile header */}
+        <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+            <Wallet size={18} />
           </div>
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
-            <h1 className="text-sm text-gray-400">Total target</h1>
-            <h1 className="mt-1 break-words text-lg font-semibold sm:text-2xl">
-              {loading ? "..." : ksh(totalTarget)}
-            </h1>
-          </div>
+          <span className="text-sm font-semibold">paytrack</span>
         </div>
 
-        {shownError && (
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-gray-400">
-            {shownError}
-          </div>
-        )}
-
-        <form
-          onSubmit={createGoal}
-          className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4"
-        >
-          <p className="text-sm font-semibold">New goal</p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <input
-              className={`${inputClass} flex-1`}
-              placeholder="Goal name, e.g. New laptop"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              className={`${inputClass} w-40`}
-              type="number"
-              min="1"
-              placeholder="Target (KSH)"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              required
-            />
-            <button type="submit" className={pillButton} disabled={busy}>
-              Add goal
-            </button>
-          </div>
-        </form>
-
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
-          <p className="text-sm font-semibold">Your goals</p>
-
-          {!loading && goals.length === 0 && !shownError && (
-            <p className="mt-3 text-sm text-gray-400">
-              No goals yet. Create one above to start tracking your savings.
-            </p>
+        <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
+          {[...menu, { label: "Settings", to: "/settings" }].map(
+            ({ label, to }) => (
+              <NavLink key={to} to={to} className={linkClass}>
+                {label}
+              </NavLink>
+            )
           )}
+        </div>
 
-          <ul className="mt-3 divide-y divide-neutral-800">
-            {goals.map((g) => {
-              const pct = Math.min(
-                100,
-                Math.round((g.savedAmount / g.targetAmount) * 100)
-              );
-              return (
-                <li key={g._id} className="py-4">
-                  {editingId === g._id ? (
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <input
-                        className={`${inputClass} min-w-0 flex-1`}
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        placeholder="Goal name"
-                      />
-                      <input
-                        className={`${inputClass} w-40`}
-                        type="number"
-                        min="1"
-                        value={editTarget}
-                        onChange={(e) => setEditTarget(e.target.value)}
-                        placeholder="Target (KSH)"
-                      />
-                      <button
-                        className={pillButton}
-                        disabled={busy || !editName.trim() || !Number(editTarget)}
-                        onClick={() => saveEdit(g._id)}
-                      >
-                        Save
-                      </button>
-                      <button className={outlineButton} onClick={cancelEdit}>
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                      <span className="truncate font-medium">{g.name}</span>
-                      <span className="shrink-0 text-gray-400">
-                        {ksh(g.savedAmount)} of {ksh(g.targetAmount)} · {pct}%
-                      </span>
-                    </div>
-                  )}
-                  <div className="h-2 w-full rounded-full bg-neutral-800">
-                    <div
-                      className="h-2 rounded-full bg-indigo-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <input
-                      className={`${inputClass} w-40`}
-                      type="number"
-                      min="1"
-                      placeholder="Amount (KSH)"
-                      value={deposits[g._id] || ""}
-                      onChange={(e) =>
-                        setDeposits((prev) => ({ ...prev, [g._id]: e.target.value }))
-                      }
-                    />
-                    <button
-                      className={pillButton}
-                      disabled={busy || !deposits[g._id]}
-                      onClick={() => addMoney(g._id)}
-                    >
-                      Add money
-                    </button>
-                    <div className="ml-auto flex items-center gap-2">
-                      <button
-                        className={outlineButton}
-                        disabled={busy}
-                        onClick={() => startEdit(g)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className={dangerButton}
-                        disabled={busy}
-                        onClick={() => removeGoal(g._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+        <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
+          <h1 className="text-2xl font-semibold">Savings</h1>
+          <p className="text-sm text-gray-500">
+            Keep track of what you're putting aside
+          </p>
+        </div>
+
+        {/* Summary */}
+        <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">
+          <div className={`col-span-2 md:col-span-1 ${card}`}>
+            <p className="text-sm text-gray-500">Total saved</p>
+            <p className="mt-1 break-words text-xl font-semibold sm:text-2xl">
+              {loading ? "..." : formatMoney(totalSaved)}
+            </p>
+          </div>
+
+          <div className={card}>
+            <p className="text-sm text-gray-500">Target amount</p>
+            <p className="mt-1 break-words text-lg font-semibold sm:text-2xl">
+              {loading ? "..." : formatMoney(totalTarget)}
+            </p>
+          </div>
+
+          <div className={card}>
+            <p className="text-sm text-gray-500">Still to save</p>
+            <p className="mt-1 break-words text-lg font-semibold sm:text-2xl">
+              {loading ? "..." : formatMoney(remaining)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mx-3 space-y-4 sm:mx-4 md:mx-8 md:space-y-6">
+          {/* Overall progress */}
+          <section className={card}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold">Overall progress</p>
+                <p className="text-xs text-gray-500">
+                  Your progress across all savings goals
+                </p>
+              </div>
+
+              <span className="text-sm font-semibold tabular-nums">
+                {overallProgress.toFixed(0)}%
+              </span>
+            </div>
+
+            <div className="mt-3 h-2 w-full rounded-full bg-neutral-200">
+              <div
+                className="h-2 rounded-full bg-indigo-500 transition-all"
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+
+            <div className="mt-2 flex justify-between text-xs text-gray-500">
+              <span>{formatMoney(totalSaved)} saved</span>
+              <span>{formatMoney(totalTarget)} target</span>
+            </div>
+          </section>
+
+          {/* Create / edit goal */}
+          <section className={card}>
+            <p className="text-sm font-semibold">
+              {editingId ? "Edit savings goal" : "Create a savings goal"}
+            </p>
+            <p className="text-xs text-gray-500">
+              {editingId
+                ? "Update the details of your goal."
+                : "Give your savings a clear target."}
+            </p>
+
+            <form onSubmit={handleSubmit} className="mt-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="goalName"
+                    className="mb-1.5 block text-xs font-medium text-gray-600"
+                  >
+                    Goal name
+                  </label>
+
+                  <input
+                    id="goalName"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. New laptop"
+                    className="w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-neutral-400 focus:bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="targetAmount"
+                    className="mb-1.5 block text-xs font-medium text-gray-600"
+                  >
+                    Target amount (KSH)
+                  </label>
+
+                  <input
+                    id="targetAmount"
+                    type="number"
+                    min="1"
+                    value={targetAmount}
+                    onChange={(e) => setTargetAmount(e.target.value)}
+                    placeholder="e.g. 50000"
+                    className="w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-neutral-400 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              {formError && depositId === null && (
+                <p className="mt-3 text-xs text-red-500">{formError}</p>
+              )}
+
+              {message && (
+                <p className="mt-3 text-xs text-green-600">{message}</p>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="rounded-xl bg-[#111827] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {busy
+                    ? "Please wait..."
+                    : editingId
+                      ? "Save changes"
+                      : "Create goal"}
+                </button>
+
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="rounded-xl border border-neutral-200 bg-white px-5 py-2.5 text-sm text-gray-600 transition hover:bg-neutral-50"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          </section>
+
+          {/* Savings goals */}
+          <section className={card}>
+            <p className="text-sm font-semibold">Your savings goals</p>
+            <p className="text-xs text-gray-500">
+              {goals.length} {goals.length === 1 ? "goal" : "goals"}
+            </p>
+
+            {loading ? (
+              <p className="mt-3 text-sm text-gray-500">
+                Loading your savings...
+              </p>
+            ) : error ? (
+              <p className="mt-3 text-sm text-gray-500">
+                Unable to load your savings goals. Please refresh and try
+                again.
+              </p>
+            ) : goals.length === 0 ? (
+              <p className="mt-3 text-sm text-gray-500">
+                No goals yet. Create your first one above to start tracking
+                your savings.
+              </p>
+            ) : (
+              <ul className="mt-3 divide-y divide-neutral-100">
+                {goals.map((goal) => {
+                  const saved = Number(goal.savedAmount || 0);
+                  const target = Number(goal.targetAmount || 0);
+                  const progress =
+                    target > 0 ? Math.min((saved / target) * 100, 100) : 0;
+
+                  const goalRemaining = Math.max(target - saved, 0);
+                  const completed = progress >= 100;
+
+                  return (
+                    <li key={goal._id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="truncate text-sm font-medium">
+                              {goal.name}
+                            </span>
+
+                            {completed && (
+                              <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600">
+                                Completed
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                            {formatMoney(saved)} of {formatMoney(target)}
+                          </p>
+
+                          <div className="mt-2 h-2 w-full rounded-full bg-neutral-200">
+                            <div
+                              className="h-2 rounded-full bg-indigo-500 transition-all"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-gray-500">
+                            <span>{progress.toFixed(0)}% complete</span>
+                            <span>
+                              {completed
+                                ? "Target reached"
+                                : `${formatMoney(goalRemaining)} to go`}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDepositId(goal._id);
+                              setDepositAmount("");
+                              setFormError("");
+                              setMessage("");
+                            }}
+                            className="rounded-lg bg-[#111827] px-3 py-2 text-xs font-medium text-white transition hover:bg-black"
+                          >
+                            Add money
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(goal)}
+                            className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-gray-600 transition hover:bg-neutral-50"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(goal._id)}
+                            disabled={busy}
+                            className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      {depositId === goal._id && (
+                        <form
+                          onSubmit={handleDeposit}
+                          className="mt-4 border-t border-neutral-100 pt-4"
+                        >
+                          <label
+                            htmlFor={`deposit-${goal._id}`}
+                            className="mb-1.5 block text-xs font-medium text-gray-600"
+                          >
+                            Deposit amount (KSH)
+                          </label>
+
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <input
+                              id={`deposit-${goal._id}`}
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              value={depositAmount}
+                              onChange={(e) =>
+                                setDepositAmount(e.target.value)
+                              }
+                              placeholder="Enter amount"
+                              className="w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3 py-2.5 text-sm outline-none focus:border-neutral-400 focus:bg-white sm:max-w-xs"
+                            />
+
+                            <button
+                              type="submit"
+                              disabled={busy}
+                              className="rounded-xl bg-[#111827] px-4 py-2.5 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
+                            >
+                              {busy ? "Adding..." : "Confirm deposit"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDepositId(null);
+                                setDepositAmount("");
+                                setFormError("");
+                              }}
+                              className="rounded-xl border border-neutral-200 px-4 py-2.5 text-sm text-gray-600 hover:bg-neutral-50"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+
+                          {formError && (
+                            <p className="mt-2 text-xs text-red-500">
+                              {formError}
+                            </p>
+                          )}
+                        </form>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
         </div>
       </div>
     </div>
   );
 }
-
-export default Savings;

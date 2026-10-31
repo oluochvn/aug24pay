@@ -1,6 +1,18 @@
-import { useState, useEffect, type FormEvent, type CSSProperties } from "react";
+
+import { useState, useEffect, type FormEvent } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Wallet, Bell, Settings } from "lucide-react";
+import {
+  Wallet,
+  Settings,
+  LayoutDashboard,
+  ArrowLeftRight,
+  PiggyBank,
+  BarChart3,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
 
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
 const TX = "/transactions";
@@ -24,7 +36,39 @@ interface FormState {
   date: string;
 }
 
-const today = () => new Date().toISOString().slice(0, 10);
+const categories: Record<TxType, string[]> = {
+  expense: [
+    "Food & Drink",
+    "Transport",
+    "Housing",
+    "Shopping",
+    "Health",
+    "Education",
+    "Entertainment",
+    "Communication",
+    "Personal & Family",
+    "Financial Expenses",
+    "Other",
+  ],
+  income: [
+    "Salary",
+    "Freelance",
+    "Business",
+    "Investments",
+    "Gifts",
+    "Interest",
+    "Rental Income",
+    "Refunds",
+    "Other Income",
+  ],
+};
+
+const today = () => {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+};
 
 const emptyForm = (): FormState => ({
   type: "expense",
@@ -34,7 +78,9 @@ const emptyForm = (): FormState => ({
   date: today(),
 });
 
-const ksh = (n: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
+const ksh = (n: number) =>
+  `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
+
 const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", {
     day: "numeric",
@@ -42,19 +88,36 @@ const day = (d: string) =>
     year: "numeric",
   });
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-    isActive ? "bg-white text-black" : "text-gray-400 hover:bg-neutral-800"
+const menu = [
+  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
+  { label: "Savings", to: "/savings", icon: PiggyBank },
+  { label: "Reports", to: "/reports", icon: BarChart3 },
+];
+
+const sideLink = ({ isActive }: { isActive: boolean }) =>
+  `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+    isActive
+      ? "bg-white font-medium text-[#111827] shadow-sm"
+      : "text-gray-500 hover:bg-white/60"
   }`;
 
-const inputClass =
-  "rounded-xl border border-neutral-800 bg-neutral-950 text-sm text-gray-100 placeholder-gray-500 outline-none [color-scheme:dark] focus:border-indigo-400";
+const linkClass = ({ isActive }: { isActive: boolean }) =>
+  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
+    isActive
+      ? "bg-[#111827] text-white"
+      : "bg-white text-gray-600"
+  }`;
 
-const inputStyle: CSSProperties = { padding: "8px 12px" };
-const buttonStyle: CSSProperties = { padding: "8px 20px" };
+const card =
+  "rounded-2xl border border-neutral-200 bg-white p-4";
+
+const inputClass =
+  "w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-400";
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
+
   const res = await fetch(`${API}${path}`, {
     ...options,
     headers: {
@@ -62,18 +125,22 @@ async function request(path: string, options: RequestInit = {}) {
       Authorization: `Bearer ${token}`,
     },
   });
+
   const body = await res.json().catch(() => ({}));
+
   if (!res.ok) {
     throw Object.assign(
       new Error(body.message || `Request failed (${res.status})`),
       { status: res.status }
     );
   }
+
   return body;
 }
 
 function Transactions() {
   const navigate = useNavigate();
+
   const [items, setItems] = useState<Transaction[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,11 +151,13 @@ function Transactions() {
 
   const handleError = (err: unknown) => {
     const e = err as Error & { status?: number };
+
     if (e.status === 401) {
       localStorage.removeItem("token");
       navigate("/login", { replace: true });
       return;
     }
+
     setError(e.message);
   };
 
@@ -105,13 +174,17 @@ function Transactions() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/login", { replace: true });
       return;
     }
+
     load();
 
-    fetch(`${API}/summary`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API}/summary`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => setUsername(body?.user?.username || ""))
       .catch(() => {});
@@ -120,20 +193,35 @@ function Transactions() {
   const update = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
+  const changeType = (type: TxType) => {
+    setForm((f) => ({
+      ...f,
+      type,
+      category: "",
+    }));
+  };
+
   const reset = () => {
     setForm(emptyForm());
     setEditingId(null);
+    setError("");
   };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!form.category) {
+      setError("Please select a transaction category.");
+      return;
+    }
+
     setSaving(true);
 
     const payload = {
       type: form.type,
       amount: Number(form.amount),
-      category: form.category.trim(),
+      category: form.category,
       note: form.note.trim(),
       date: form.date,
     };
@@ -150,6 +238,7 @@ function Transactions() {
           body: JSON.stringify(payload),
         });
       }
+
       reset();
       await load();
     } catch (err) {
@@ -161,6 +250,7 @@ function Transactions() {
 
   const startEdit = (t: Transaction) => {
     setEditingId(t._id);
+
     setForm({
       type: t.type,
       amount: String(t.amount),
@@ -168,217 +258,379 @@ function Transactions() {
       note: t.note || "",
       date: t.date.slice(0, 10),
     });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const remove = async (id: string) => {
     if (!window.confirm("Delete this transaction?")) return;
+
     setError("");
+
     try {
       await request(`${TX}/${id}`, { method: "DELETE" });
+
       if (editingId === id) reset();
+
       setItems((list) => list.filter((t) => t._id !== id));
     } catch (err) {
       handleError(err);
     }
   };
 
+  const income = items
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const expenses = items
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+
   return (
-    <div className="dashboard min-h-screen bg-neutral-950 p-2 pb-6 text-gray-100 sm:p-4">
-      <div className="m-3 flex flex-wrap items-center justify-between gap-3 sm:m-4 md:m-8 md:flex-nowrap">
-        <NavLink to="/dashboard" className="order-1 flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+    <div className="dashboard min-h-screen bg-[#F2F2F2] text-[#111827] lg:flex">
+
+      {/* Sidebar */}
+      <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
+
+        <NavLink to="/dashboard" className="flex items-center gap-2 px-1">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </NavLink>
 
-        <div className="order-3 -mx-1 flex w-full items-center gap-2 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:w-auto md:overflow-visible md:px-0 md:pb-0">
-          <NavLink to="/dashboard" className={linkClass}>
-            Dashboard
-          </NavLink>
-          <NavLink to="/transactions" className={linkClass}>
-            Transactions
-          </NavLink>
-          <NavLink to="/savings" className={linkClass}>
-            Savings
-          </NavLink>
-          <NavLink to="/reports" className={linkClass}>
-            Reports
-          </NavLink>
-        </div>
+        <nav className="mt-8 space-y-1">
+          {menu.map(({ label, to, icon: Icon }) => (
+            <NavLink key={to} to={to} className={sideLink}>
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
 
-        <div className="order-2 flex items-center gap-3 md:order-3">
-          <button
-            type="button"
-            className="p-1 text-gray-400 hover:text-white"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-          </button>
-          <NavLink
-            to="/settings"
-            className="p-1 text-gray-400 hover:text-white"
-            aria-label="Settings"
-          >
+        <div className="mt-auto space-y-1">
+          <NavLink to="/settings" className={sideLink}>
             <Settings size={18} />
+            Settings
           </NavLink>
-          <div className="relative">
+
+          <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-800 text-white text-xs font-medium"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-medium text-white"
             >
               {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
-            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-neutral-950 bg-green-500" />
+
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {username || "Your account"}
+              </p>
+              <p className="text-xs text-gray-500">Personal account</p>
+            </div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <form
-        onSubmit={submit}
-        className="mx-3 mt-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 sm:mx-4 md:mx-8 md:mt-12"
-      >
-        <p className="text-sm font-semibold">
-          {editingId ? "Edit transaction" : "Add transaction"}
-        </p>
+      {/* Main content */}
+      <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <select
-            value={form.type}
-            onChange={(e) => update("type", e.target.value)}
-            style={inputStyle}
-            className={`${inputClass} w-32 shrink-0`}
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
-
-          <input
-            type="number"
-            min="1"
-            step="any"
-            required
-            placeholder="Amount"
-            value={form.amount}
-            onChange={(e) => update("amount", e.target.value)}
-            style={inputStyle}
-            className={`${inputClass} w-32 shrink-0`}
-          />
-
-          <input
-            type="text"
-            required
-            placeholder="Category"
-            value={form.category}
-            onChange={(e) => update("category", e.target.value)}
-            style={inputStyle}
-            className={`${inputClass} min-w-0 flex-1 basis-40`}
-          />
-
-          <input
-            type="text"
-            placeholder="Note (optional)"
-            value={form.note}
-            onChange={(e) => update("note", e.target.value)}
-            style={inputStyle}
-            className={`${inputClass} min-w-0 flex-1 basis-48`}
-          />
-
-          <input
-            type="date"
-            required
-            value={form.date}
-            onChange={(e) => update("date", e.target.value)}
-            style={inputStyle}
-            className={`${inputClass} w-40 shrink-0`}
-          />
+        {/* Mobile brand */}
+        <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+            <Wallet size={18} />
+          </div>
+          <span className="text-sm font-semibold">paytrack</span>
         </div>
 
-        {error && <p className="mt-3 text-sm text-[#ff4d52]">{error}</p>}
-
-        <div className="mt-4 flex items-center gap-2">
-          <button
-            type="submit"
-            disabled={saving}
-            style={buttonStyle}
-            className="rounded-full bg-indigo-500 text-sm text-white transition-colors hover:bg-indigo-400 disabled:opacity-50"
-          >
-            {saving ? "Saving..." : editingId ? "Update" : "Add"}
-          </button>
-
-          {editingId && (
-            <button
-              type="button"
-              onClick={reset}
-              style={buttonStyle}
-              className="rounded-full text-sm text-gray-400 hover:bg-neutral-800"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
-
-      <div className="mx-3 mt-4 rounded-2xl border border-neutral-800 bg-neutral-900 p-4 sm:mx-4 md:mx-8 md:mt-6">
-        <p className="text-sm font-semibold">History</p>
-
-        {loading && <p className="mt-3 text-sm text-gray-400">Loading...</p>}
-
-        {!loading && items.length === 0 && (
-          <p className="mt-3 text-sm text-gray-400">
-            No transactions yet. Add your first one above.
-          </p>
-        )}
-
-        <ul className="mt-2 divide-y divide-neutral-800">
-          {items.map((t) => (
-            <li
-              key={t._id}
-              style={{ padding: "12px 0" }}
-              className="flex items-center justify-between gap-3"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{t.category}</p>
-                <p className="truncate text-xs text-gray-400">
-                  {t.note ? `${t.note} · ` : ""}
-                  {day(t.date)}
-                </p>
-              </div>
-
-              <div style={{ gap: 20 }} className="flex shrink-0 items-center">
-                <span
-                  style={{ minWidth: 110, textAlign: "right" }}
-                  className={`text-sm font-medium ${
-                    t.type === "income" ? "text-green-400" : "text-[#ff4d52]"
-                  }`}
-                >
-                  {t.type === "income" ? "+" : "-"}
-                  {ksh(t.amount)}
-                </span>
-
-                <div style={{ gap: 8 }} className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => startEdit(t)}
-                    style={{ padding: "4px 12px" }}
-                    className="rounded-full border border-neutral-700 text-xs text-gray-300 hover:bg-neutral-800"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(t._id)}
-                    style={{ padding: "4px 12px" }}
-                    className="rounded-full border border-red-900 text-xs text-[#ff4d52] hover:bg-red-950"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </li>
+        {/* Mobile navigation */}
+        <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
+          {menu.map(({ label, to }) => (
+            <NavLink key={to} to={to} className={linkClass}>
+              {label}
+            </NavLink>
           ))}
-        </ul>
+        </div>
+
+        {/* Heading */}
+        <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
+          <h1 className="text-2xl font-semibold">Transactions</h1>
+          <p className="text-sm text-gray-500">
+            Manage and track your income and expenses
+          </p>
+        </div>
+
+        {/* Summary */}
+        <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">
+
+          <div className={`col-span-2 md:col-span-1 ${card}`}>
+            <p className="text-sm text-gray-500">Total transactions</p>
+            <p className="mt-1 text-2xl font-semibold">
+              {loading ? "..." : items.length}
+            </p>
+          </div>
+
+          <div className={card}>
+            <p className="text-sm text-gray-500">Total income</p>
+            <p className="mt-1 break-words text-lg font-semibold text-black sm:text-2xl">
+              {loading ? "..." : ksh(income)}
+            </p>
+          </div>
+
+          <div className={card}>
+            <p className="text-sm text-gray-500">Total expenses</p>
+            <p className="mt-1 break-words text-lg font-semibold text-black/70 sm:text-2xl">
+              {loading ? "..." : ksh(expenses)}
+            </p>
+          </div>
+        </div>
+
+        {/* Add transaction */}
+        <form
+          onSubmit={submit}
+          className={`mx-3 mt-5 sm:mx-4 md:mx-8 md:mt-6 ${card}`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">
+                {editingId ? "Edit transaction" : "Add transaction"}
+              </p>
+              <p className="mt-0.5 text-xs text-gray-500">
+                Record a new income or expense
+              </p>
+            </div>
+
+            {editingId && (
+              <button
+                type="button"
+                onClick={reset}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-gray-500 hover:bg-neutral-200"
+                aria-label="Cancel editing"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+            {/* Type */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                Transaction type
+              </label>
+
+              <select
+                value={form.type}
+                onChange={(e) => changeType(e.target.value as TxType)}
+                className={inputClass}
+              >
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
+            </div>
+
+            {/* Amount */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                Amount (KSH)
+              </label>
+
+              <input
+                type="number"
+                min="0.01"
+                step="any"
+                required
+                placeholder="0.00"
+                value={form.amount}
+                onChange={(e) => update("amount", e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            {/* Category dropdown */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                Category
+              </label>
+
+              <select
+                required
+                value={form.category}
+                onChange={(e) => update("category", e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Select category</option>
+
+                {categories[form.type].map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Note */}
+            <div className="sm:col-span-2 lg:col-span-1">
+              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                Note (optional)
+              </label>
+
+              <input
+                type="text"
+                placeholder="Add a description"
+                value={form.note}
+                onChange={(e) => update("note", e.target.value)}
+                className={inputClass}
+              />
+            </div>
+
+            {/* Date */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                Date
+              </label>
+
+              <input
+                type="date"
+                required
+                value={form.date}
+                onChange={(e) => update("date", e.target.value)}
+                className={`${inputClass} [color-scheme:light]`}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <p className="mt-3 text-sm text-[#ff4d52]">{error}</p>
+          )}
+
+          <div className="mt-5 flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-600 disabled:opacity-50"
+            >
+              <Plus size={15} />
+              {saving
+                ? "Saving..."
+                : editingId
+                  ? "Update transaction"
+                  : "Add transaction"}
+            </button>
+
+            {editingId && (
+              <button
+                type="button"
+                onClick={reset}
+                className="rounded-full px-4 py-2.5 text-sm text-gray-500 hover:bg-neutral-100"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+
+        {/* History */}
+        <div className={`mx-3 mt-5 sm:mx-4 md:mx-8 md:mt-6 ${card}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">Transaction history</p>
+              <p className="mt-0.5 text-xs text-gray-500">
+                Your recorded financial activity
+              </p>
+            </div>
+
+            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs text-gray-500">
+              {items.length} records
+            </span>
+          </div>
+
+          {loading && (
+            <p className="mt-4 text-sm text-gray-500">
+              Loading transactions...
+            </p>
+          )}
+
+          {!loading && items.length === 0 && (
+            <div className="py-12 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-gray-400">
+                <ArrowLeftRight size={20} />
+              </div>
+              <p className="mt-3 text-sm font-medium">
+                No transactions yet
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Add your first transaction to see it here.
+              </p>
+            </div>
+          )}
+
+          <ul className="mt-3 divide-y divide-neutral-100">
+            {items.map((t) => (
+              <li
+                key={t._id}
+                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      t.type === "income"
+                        ? "bg-green-50 text-green-600"
+                        : "bg-red-50 text-red-500"
+                    }`}
+                  >
+                    <ArrowLeftRight size={18} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      {t.category}
+                    </p>
+                    <p className="truncate text-xs text-gray-500">
+                      {t.note ? `${t.note} · ` : ""}
+                      {day(t.date)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 sm:justify-end">
+                  <span
+                    className={`text-sm font-semibold ${
+                      t.type === "income"
+                        ? "text-black"
+                        : "text-[#ff4d52]"
+                    }`}
+                  >
+                    {t.type === "income" ? "+" : "-"}
+                    {ksh(t.amount)}
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(t)}
+                      aria-label="Edit transaction"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                    >
+                      <Pencil size={15} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => remove(t._id)}
+                      aria-label="Delete transaction"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
       </div>
     </div>
   );

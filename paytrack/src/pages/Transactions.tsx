@@ -1,5 +1,4 @@
-
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Wallet,
@@ -13,6 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useApi, invalidate } from "../lib/useApi";
 
 const API = import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
 const TX = "/transactions";
@@ -120,6 +120,8 @@ async function request(path: string, options: RequestInit = {}) {
 
   const res = await fetch(`${API}${path}`, {
     ...options,
+    // Never let the browser answer from its own HTTP cache.
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -138,16 +140,38 @@ async function request(path: string, options: RequestInit = {}) {
   return body;
 }
 
+// Pages that cache data derived from transactions. invalidate() matches by
+// prefix, so "/reports" also clears every ?months= range.
+const refreshCaches = () => {
+  invalidate("/summary");
+  invalidate("/reports");
+};
+
 function Transactions() {
   const navigate = useNavigate();
 
-  const [items, setItems] = useState<Transaction[]>([]);
+  // Shared cache with the other pages, so the sidebar name needs no extra request.
+  const { data: summary } = useApi<{ user?: { username?: string } }>(
+    "/summary"
+  );
+  const username = summary?.user?.username || "";
+
+  const {
+    data: listData,
+    loading,
+    error: loadError,
+    refresh,
+    update: setItems,
+  } = useApi<Transaction[] | { transactions: Transaction[] }>(TX);
+
+  const items: Transaction[] = Array.isArray(listData)
+    ? listData
+    : listData?.transactions ?? [];
+
   const [form, setForm] = useState<FormState>(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [username, setUsername] = useState("");
 
   const handleError = (err: unknown) => {
     const e = err as Error & { status?: number };
@@ -160,35 +184,6 @@ function Transactions() {
 
     setError(e.message);
   };
-
-  const load = async () => {
-    try {
-      const body = await request(TX);
-      setItems(Array.isArray(body) ? body : body.transactions ?? []);
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    load();
-
-    fetch(`${API}/summary`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((body) => setUsername(body?.user?.username || ""))
-      .catch(() => {});
-  }, []);
 
   const update = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
@@ -240,7 +235,8 @@ function Transactions() {
       }
 
       reset();
-      await load();
+      refreshCaches();
+      await refresh();
     } catch (err) {
       handleError(err);
     } finally {
@@ -272,7 +268,8 @@ function Transactions() {
 
       if (editingId === id) reset();
 
-      setItems((list) => list.filter((t) => t._id !== id));
+      setItems(items.filter((t) => t._id !== id));
+      refreshCaches();
     } catch (err) {
       handleError(err);
     }
@@ -552,7 +549,11 @@ function Transactions() {
             </p>
           )}
 
-          {!loading && items.length === 0 && (
+          {!loading && loadError && items.length === 0 && (
+            <p className="mt-4 text-sm text-gray-500">{loadError}</p>
+          )}
+
+          {!loading && !loadError && items.length === 0 && (
             <div className="py-12 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-gray-400">
                 <ArrowLeftRight size={20} />

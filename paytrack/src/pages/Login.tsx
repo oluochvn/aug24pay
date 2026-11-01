@@ -1,7 +1,11 @@
-import { useState, type FormEvent } from "react";
+
+import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Wallet } from "lucide-react";
 import { clearCache } from "../lib/useApi";
+
+const API =
+  import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com";
 
 const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100";
@@ -15,9 +19,29 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const token = params.get("token");
+
+    if (token) {
+      localStorage.setItem("token", token);
+      clearCache();
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search
+      );
+      navigate("/dashboard", { replace: true });
+    }
+
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("error") === "google_auth_failed") {
+      setError("Google login failed. Please try again.");
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setError("");
 
     if (!email || !password) {
@@ -28,15 +52,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://augbcknov1.onrender.com/login", {
+      const res = await fetch(`${API}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json().catch(() => null);
@@ -50,15 +71,15 @@ export default function Login() {
         return;
       }
 
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
+      if (!data?.token) {
+        setError("Login succeeded but no authentication token was returned.");
+        return;
       }
 
-      // Drop anything cached by a previous session so a new login never sees it.
+      localStorage.setItem("token", data.token);
       clearCache();
-
       navigate("/dashboard");
-    } catch (err) {
+    } catch {
       setError(
         "Could not reach the server. Please check your connection and try again."
       );
@@ -68,8 +89,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href =
-      "https://augbcknov1.onrender.com//api/auth/google";
+    window.location.href = `${API}/auth/google`;
   };
 
   return (
@@ -77,7 +97,6 @@ export default function Login() {
       className="relative min-h-screen w-full overflow-hidden bg-[#F2F2F2] text-[#111827]"
       style={{ colorScheme: "light" }}
     >
-      {/* Soft background glows, same palette as the dashboard */}
       <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-indigo-300/30 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-emerald-300/30 blur-3xl" />
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-fuchsia-200/30 blur-3xl" />
@@ -86,7 +105,6 @@ export default function Login() {
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white">
           <Wallet size={18} />
         </div>
-
         <span className="text-sm font-semibold">paytrack</span>
       </header>
 
@@ -96,7 +114,6 @@ export default function Login() {
             <h1 className="text-2xl font-semibold tracking-tight">
               Welcome back
             </h1>
-
             <p className="mt-1 text-sm text-gray-500">
               Log in to your paytrack account
             </p>
@@ -108,35 +125,17 @@ export default function Login() {
             className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 bg-white py-3 text-sm font-medium text-[#111827] transition-colors hover:bg-neutral-50"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.56-5.17 3.56-8.82z"
-              />
-
-              <path
-                fill="#34A853"
-                d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1C3.24 21.3 7.26 24 12 24z"
-              />
-
-              <path
-                fill="#FBBC05"
-                d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28v-3.1H1.26A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.26 5.38l4.01-3.1z"
-              />
-
-              <path
-                fill="#EA4335"
-                d="M12 4.77c1.76 0 3.34.6 4.59 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.26 0 3.24 2.7 1.26 6.62l4.01 3.1c.95-2.85 3.6-4.96 6.73-4.96z"
-              />
+              <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.56-5.17 3.56-8.82z" />
+              <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1C3.24 21.3 7.26 24 12 24z" />
+              <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28v-3.1H1.26A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.26 5.38l4.01-3.1z" />
+              <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.6 4.59 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.26 0 3.24 2.7 1.26 6.62l4.01 3.1c.95-2.85 3.6-4.96 6.73-4.96z" />
             </svg>
-
             Continue with Google
           </button>
 
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-neutral-200" />
-
             <span className="text-xs text-gray-400">or</span>
-
             <div className="h-px flex-1 bg-neutral-200" />
           </div>
 
@@ -152,13 +151,9 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="mb-1.5 block text-xs font-medium text-gray-600"
-              >
+              <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-gray-600">
                 Email
               </label>
-
               <input
                 required
                 id="email"
@@ -173,13 +168,9 @@ export default function Login() {
 
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-xs font-medium text-gray-600"
-                >
+                <label htmlFor="password" className="block text-xs font-medium text-gray-600">
                   Password
                 </label>
-
                 <button
                   type="button"
                   onClick={() => navigate("/forgot-password")}
@@ -200,20 +191,13 @@ export default function Login() {
                   placeholder="••••••••"
                   className={`${inputClass} pr-11`}
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#111827]"
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>

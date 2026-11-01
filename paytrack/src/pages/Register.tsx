@@ -35,7 +35,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch(`https://augbcknov1.onrender.com//register`, {
+      const res = await fetch(`https://augbcknov1.onrender.com/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

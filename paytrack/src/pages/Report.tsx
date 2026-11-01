@@ -44,7 +44,7 @@ interface Transaction {
 }
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
+  import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com/";
 
 const ranges = [
   { label: "1M", value: 1 },

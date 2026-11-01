@@ -22,7 +22,7 @@ interface Summary {
 }
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://pay-8mq3.onrender.com";
+  import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com/";
 
 const menu = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },

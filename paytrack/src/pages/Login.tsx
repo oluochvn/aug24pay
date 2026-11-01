@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Wallet } from "lucide-react";
+import { clearCache } from "../lib/useApi";
 
 const inputClass =
   "w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100";
@@ -27,7 +28,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://pay-8mq3.onrender.com/login", {
+      const res = await fetch("https://augbcknov1.onrender.com//login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,6 +54,9 @@ export default function Login() {
         localStorage.setItem("token", data.token);
       }
 
+      // Drop anything cached by a previous session so a new login never sees it.
+      clearCache();
+
       navigate("/dashboard");
     } catch (err) {
       setError(
@@ -65,7 +69,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     window.location.href =
-      "https://pay-8mq3.onrender.com/api/auth/google";
+      "https://augbcknov1.onrender.com//api/auth/google";
   };
 
   return (

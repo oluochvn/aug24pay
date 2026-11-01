@@ -28,7 +28,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch("https://augbcknov1.onrender.com//login", {
+      const res = await fetch("https://augbcknov1.onrender.com/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

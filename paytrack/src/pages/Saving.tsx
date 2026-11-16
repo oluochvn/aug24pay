@@ -2,13 +2,13 @@ import { useState, type FormEvent } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Wallet,
-  Settings,
+  LogOut,
   LayoutDashboard,
   ArrowLeftRight,
   PiggyBank,
   BarChart3,
 } from "lucide-react";
-import { useApi, invalidate } from "../lib/useApi";
+import { useApi, invalidate, logout } from "../lib/useApi";
 
 interface Goal {
   _id: string;
@@ -21,8 +21,7 @@ interface Summary {
   user?: { username?: string };
 }
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com/";
+const API_URL = "/api";
 
 const menu = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
@@ -302,10 +301,14 @@ export default function Savings() {
         </nav>
 
         <div className="mt-auto space-y-1">
-          <NavLink to="/settings" className={sideLink}>
-            <Settings size={18} />
-            Settings
-          </NavLink>
+          <button
+            type="button"
+            onClick={logout}
+            className={sideLink({ isActive: false })}
+          >
+            <LogOut size={18} />
+            Log out
+          </button>
 
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
@@ -335,13 +338,18 @@ export default function Savings() {
         </div>
 
         <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
-          {[...menu, { label: "Settings", to: "/settings" }].map(
-            ({ label, to }) => (
-              <NavLink key={to} to={to} className={linkClass}>
-                {label}
-              </NavLink>
-            )
-          )}
+          {menu.map(({ label, to }) => (
+            <NavLink key={to} to={to} className={linkClass}>
+              {label}
+            </NavLink>
+          ))}
+          <button
+            type="button"
+            onClick={logout}
+            className={linkClass({ isActive: false })}
+          >
+            Log out
+          </button>
         </div>
 
         <div className="mx-3 mt-6 sm:mx-4 md:mx-8">

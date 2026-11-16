@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Wallet } from "lucide-react";
 
 const inputClass =
-  "w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100";
+  "w-full border border-[#292a2d] bg-[#1c1c1d] px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-[#6b6f76] focus:border-[#7180ff] focus:ring-2 focus:ring-[#7180ff]/20";
 
-const labelClass = "mb-1.5 block text-xs font-medium text-gray-600";
+const labelClass = "mb-1.5 block text-xs font-medium text-[#e2e3e5]";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch(`https://augbcknov1.onrender.com/register`, {
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,35 +71,30 @@ export default function Register() {
 
   return (
     <div
-      className="relative min-h-screen w-full overflow-hidden bg-[#F2F2F2] text-[#111827]"
-      style={{ colorScheme: "light" }}
+      className="min-h-screen w-full bg-[#09090A] text-white"
+      style={{ colorScheme: "dark" }}
     >
-      {/* Soft background glows, same palette as the dashboard */}
-      <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-indigo-300/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-emerald-300/30 blur-3xl" />
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-fuchsia-200/30 blur-3xl" />
-
-      <header className="relative flex items-center gap-2 px-6 py-5 sm:px-10">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white">
+      <header className="flex items-center gap-2 px-6 py-5 sm:px-10">
+        <div className="flex h-9 w-9 items-center justify-center bg-[#6d78d5] text-white">
           <Wallet size={18} />
         </div>
         <span className="text-sm font-semibold">paytrack</span>
       </header>
 
-      <main className="relative flex justify-center px-4 pb-10 pt-6 sm:pt-10">
-        <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(17,24,39,0.35)] sm:p-8">
+      <main className="flex justify-center px-4 pb-10 pt-2 sm:pt-6">
+        <div className="w-full max-w-md border border-[#212224] bg-[#121213] p-6 sm:p-8">
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
               Create your account
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[#97979a]">
               Sign up to get started with paytrack
             </p>
           </div>
 
           <button
             type="button"
-            className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-xl border border-neutral-200 bg-white py-3 text-sm font-medium text-[#111827] transition-colors hover:bg-neutral-50"
+            className="mt-6 flex w-full items-center justify-center gap-2.5 border border-[#ffffff22] bg-[#1c1c1d] py-3 text-sm font-medium text-[#e2e3e5] transition-colors hover:bg-[#252627]"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
               <path
@@ -123,15 +118,15 @@ export default function Register() {
           </button>
 
           <div className="mt-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-neutral-200" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="h-px flex-1 bg-neutral-200" />
+            <div className="h-px flex-1 bg-[#212224]" />
+            <span className="text-xs text-[#97979a]">or</span>
+            <div className="h-px flex-1 bg-[#212224]" />
           </div>
 
           {error && (
             <div
               role="alert"
-              className="mt-5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-3.5 py-3 text-sm text-red-600"
+              className="mt-5 flex items-start gap-2 border border-red-900 bg-red-950/30 px-3.5 py-3 text-sm text-red-300"
             >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
@@ -190,7 +185,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#111827]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-white"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -200,7 +195,7 @@ export default function Register() {
                   )}
                 </button>
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">
+              <p className="mt-1.5 text-xs text-[#6b6f76]">
                 At least 6 characters
               </p>
             </div>
@@ -223,7 +218,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-[#111827]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-white"
                   aria-label={
                     showConfirmPassword ? "Hide password" : "Show password"
                   }
@@ -240,18 +235,18 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-[#111827] py-3 text-sm font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full bg-[#6d78d5] py-3 text-sm font-medium text-white transition-colors hover:bg-[#6c78e6] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-[#97979a]">
             Already have an account?{" "}
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="font-medium text-[#111827] hover:underline"
+              className="font-medium text-[#7180ff] hover:text-white hover:underline"
             >
               Log in
             </button>

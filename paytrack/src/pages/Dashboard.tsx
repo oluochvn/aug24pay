@@ -1,20 +1,13 @@
 import { NavLink } from "react-router-dom";
 import {
   Wallet,
-  Settings,
+  LogOut,
   LayoutDashboard,
   ArrowLeftRight,
   PiggyBank,
   BarChart3,
-  Sparkles,
-  TrendingUp,
-  TrendingDown,
-  PieChart,
-  Percent,
-  Target,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { useApi } from "../lib/useApi";
+import { logout, useApi } from "../lib/useApi";
 
 interface Transaction {
   _id: string;
@@ -40,24 +33,6 @@ interface Summary {
   recentTransactions: Transaction[];
   goals: Goal[];
 }
-
-interface Report {
-  months: { label: string; year: number; income: number; expenses: number }[];
-  categories: { category: string; total: number }[];
-}
-
-interface Insight {
-  icon: LucideIcon;
-  tone: "good" | "bad" | "neutral";
-  title: string;
-  text: string;
-}
-
-const toneClass = {
-  good: "bg-green-50 text-green-600",
-  bad: "bg-red-50 text-red-500",
-  neutral: "bg-indigo-50 text-indigo-600",
-};
 
 const ksh = (n?: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
 const day = (d: string) =>
@@ -86,72 +61,8 @@ const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 
 function Dashboard() {
   const { data, loading, error } = useApi<Summary>("/summary");
-  const { data: report, loading: reportLoading } = useApi<Report>("/reports?months=6");
 
   const username = data?.user?.username || "";
-
-  const goals = data?.goals ?? [];
-  const income = data?.income || 0;
-  const expenses = data?.expenses || 0;
-  const rate = income > 0 ? Math.round(((income - expenses) / income) * 100) : null;
-
-  const months = report?.months ?? [];
-  const cur = months[months.length - 1];
-  const prev = months[months.length - 2];
-  const cats = report?.categories ?? [];
-  const catTotal = cats.reduce((sum, c) => sum + c.total, 0);
-
-  const insights: Insight[] = [];
-
-  if (cur && prev && prev.expenses > 0) {
-    const pct = Math.round(((cur.expenses - prev.expenses) / prev.expenses) * 100);
-    insights.push({
-      icon: pct > 0 ? TrendingUp : TrendingDown,
-      tone: pct > 0 ? "bad" : "good",
-      title:
-        pct === 0
-          ? "Spending is steady"
-          : `Spending is ${pct > 0 ? "up" : "down"} ${Math.abs(pct)}%`,
-      text: `${ksh(cur.expenses)} vs ${ksh(prev.expenses)} last month.`,
-    });
-  }
-
-  if (cats.length > 0 && catTotal > 0) {
-    insights.push({
-      icon: PieChart,
-      tone: "neutral",
-      title: `${cats[0].category} is your top expense`,
-      text: `${Math.round((cats[0].total / catTotal) * 100)}% of spending, ${ksh(cats[0].total)}.`,
-    });
-  }
-
-  if (rate !== null) {
-    insights.push({
-      icon: Percent,
-      tone: rate >= 20 ? "good" : rate >= 0 ? "neutral" : "bad",
-      title:
-        rate >= 0 ? `You keep ${rate}% of your income` : "Spending is above your income",
-      text:
-        rate >= 20
-          ? "A healthy savings rate."
-          : rate >= 0
-            ? "Aim for 20% or more."
-            : "Review your biggest expenses.",
-    });
-  }
-
-  const nextGoal = goals
-    .map((g) => ({ g, pct: Math.round((g.savedAmount / g.targetAmount) * 100) }))
-    .filter((x) => x.pct < 100)
-    .sort((a, b) => b.pct - a.pct)[0];
-  if (nextGoal) {
-    insights.push({
-      icon: Target,
-      tone: "good",
-      title: `${nextGoal.g.name} is ${nextGoal.pct}% funded`,
-      text: `${ksh(nextGoal.g.targetAmount - nextGoal.g.savedAmount)} to go.`,
-    });
-  }
 
   return (
     <div className="dashboard min-h-screen bg-[#F2F2F2] text-[#111827] lg:flex">
@@ -173,10 +84,14 @@ function Dashboard() {
         </nav>
 
         <div className="mt-auto space-y-1">
-          <NavLink to="/settings" className={sideLink}>
-            <Settings size={18} />
-            Settings
-          </NavLink>
+          <button
+            type="button"
+            onClick={logout}
+            className={sideLink({ isActive: false })}
+          >
+            <LogOut size={18} />
+            Log out
+          </button>
 
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
@@ -209,6 +124,13 @@ function Dashboard() {
               {label}
             </NavLink>
           ))}
+          <button
+            type="button"
+            onClick={logout}
+            className={linkClass({ isActive: false })}
+          >
+            Log out
+          </button>
         </div>
 
         {error && !data && (
@@ -244,50 +166,6 @@ function Dashboard() {
                 <p className="mt-1 break-words text-lg font-semibold text-black/80 sm:text-2xl">
                   {loading ? "..." : ksh(data?.expenses)}
                 </p>
-              </div>
-            </div>
-
-            <div className="mx-3 mb-4 rounded-2xl bg-gradient-to-br from-indigo-300/70 via-fuchsia-200/60 to-emerald-300/70 p-px sm:mx-4 md:mx-8 md:mb-6">
-              <div className="relative overflow-hidden rounded-[15px] bg-white p-4">
-                <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-indigo-200/40 blur-3xl" />
-                <div className="relative">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-emerald-400 text-white">
-                      <Sparkles size={12} />
-                    </span>
-                    <p className="text-sm font-semibold">Insights</p>
-                    <span className="text-xs text-gray-400">last 6 months</span>
-                  </div>
-
-                  {(loading || reportLoading) && insights.length === 0 && (
-                    <p className="mt-3 text-sm text-gray-500">Loading insights...</p>
-                  )}
-
-                  {!loading && !reportLoading && insights.length === 0 && (
-                    <p className="mt-3 text-sm text-gray-500">
-                      Add a few transactions and your insights will show up here.
-                    </p>
-                  )}
-
-                  <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-                    {insights.map(({ icon: Icon, tone, title, text }) => (
-                      <div
-                        key={title}
-                        className="flex gap-2.5 rounded-xl border border-neutral-200/70 bg-white/70 p-3"
-                      >
-                        <span
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${toneClass[tone]}`}
-                        >
-                          <Icon size={14} />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-medium leading-snug">{title}</p>
-                          <p className="mt-0.5 text-xs leading-snug text-gray-500">{text}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
 

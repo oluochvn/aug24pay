@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const API = import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com";
+const API = "/api";
 
 const cache = new Map<string, unknown>();
 
 export const clearCache = () => cache.clear();
+
+export const logout = () => {
+  localStorage.removeItem("token");
+  clearCache();
+  window.location.assign("/login");
+};
 
 export const invalidate = (prefix: string) => {
   for (const key of Array.from(cache.keys())) {

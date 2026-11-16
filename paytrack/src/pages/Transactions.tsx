@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Wallet,
-  Settings,
+  LogOut,
   LayoutDashboard,
   ArrowLeftRight,
   PiggyBank,
@@ -12,9 +12,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useApi, invalidate } from "../lib/useApi";
+import { useApi, invalidate, logout } from "../lib/useApi";
 
-const API = import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com/";
+const API = "/api";
 const TX = "/transactions";
 
 type TxType = "income" | "expense";
@@ -306,10 +306,14 @@ function Transactions() {
         </nav>
 
         <div className="mt-auto space-y-1">
-          <NavLink to="/settings" className={sideLink}>
-            <Settings size={18} />
-            Settings
-          </NavLink>
+          <button
+            type="button"
+            onClick={logout}
+            className={sideLink({ isActive: false })}
+          >
+            <LogOut size={18} />
+            Log out
+          </button>
 
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
@@ -347,6 +351,13 @@ function Transactions() {
               {label}
             </NavLink>
           ))}
+          <button
+            type="button"
+            onClick={logout}
+            className={linkClass({ isActive: false })}
+          >
+            Log out
+          </button>
         </div>
 
         {/* Heading */}

@@ -2,14 +2,14 @@ import { useState, type PointerEvent as ReactPointerEvent } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Wallet,
-  Settings,
+  LogOut,
   LayoutDashboard,
   ArrowLeftRight,
   PiggyBank,
   BarChart3,
   Download,
 } from "lucide-react";
-import { useApi } from "../lib/useApi";
+import { logout, useApi } from "../lib/useApi";
 
 interface MonthData {
   label: string;
@@ -43,8 +43,7 @@ interface Transaction {
   date: string;
 }
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://augbcknov1.onrender.com/";
+const API_URL = "/api";
 
 const ranges = [
   { label: "1M", value: 1 },
@@ -185,7 +184,7 @@ async function downloadPdf(
     const x = M + i * (boxW + gap);
     doc.setDrawColor(229, 229, 229);
     doc.setFillColor(255, 255, 255);
-    doc.roundedRect(x, y, boxW, boxH, 8, 8, "FD");
+    doc.rect(x, y, boxW, boxH, "FD");
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -299,10 +298,10 @@ async function downloadPdf(
     y += 8;
     const trackW = right - M;
     doc.setFillColor(229, 229, 229);
-    doc.roundedRect(M, y, trackW, 6, 3, 3, "F");
+    doc.rect(M, y, trackW, 6, "F");
     if (pct > 0) {
       doc.setFillColor(99, 102, 241);
-      doc.roundedRect(M, y, Math.max(6, (trackW * pct) / 100), 6, 3, 3, "F");
+      doc.rect(M, y, Math.max(6, (trackW * pct) / 100), 6, "F");
     }
     y += 24;
   });
@@ -515,8 +514,8 @@ function TrendChart({ months }: { months: MonthData[] }) {
           >
             <defs>
               <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#000000" stopOpacity="0.14" />
-                <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+                <stop offset="0%" stopColor="#6d78d5" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#6d78d5" stopOpacity="0" />
               </linearGradient>
             </defs>
 
@@ -526,10 +525,10 @@ function TrendChart({ months }: { months: MonthData[] }) {
               <path
                 d={smoothPath(exp)}
                 fill="none"
-                stroke="#9ca3af"
+                stroke="#97979a"
                 strokeWidth={2}
                 strokeDasharray="5 5"
-                strokeLinecap="round"
+                strokeLinecap="butt"
                 vectorEffect="non-scaling-stroke"
               />
             )}
@@ -538,10 +537,10 @@ function TrendChart({ months }: { months: MonthData[] }) {
               <path
                 d={incPath}
                 fill="none"
-                stroke="#000000"
+                stroke="#6d78d5"
                 strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinecap="butt"
+                strokeLinejoin="miter"
                 vectorEffect="non-scaling-stroke"
               />
             )}
@@ -549,7 +548,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
 
           {/* Guide line */}
           <div
-            className="pointer-events-none absolute inset-y-0 border-l border-dashed border-black/20"
+            className="pointer-events-none absolute inset-y-0 border-l border-dashed border-[#7180ff]"
             style={{ left: activeLeft }}
           />
 
@@ -559,7 +558,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
             style={{ left: activeLeft, top: `${yPct(am.expenses)}%` }}
           />
           <span
-            className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-black shadow"
+            className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#6d78d5] shadow"
             style={{ left: activeLeft, top: `${yPct(am.income)}%` }}
           />
 
@@ -575,7 +574,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
               {am.label} {am.year}
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
-              <span className="h-2 w-2 rounded-full bg-black" />
+              <span className="h-2 w-2 rounded-full bg-[#6d78d5]" />
               Income: {ksh(am.income)}
             </p>
             <p className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-600">
@@ -678,10 +677,14 @@ function Reports() {
         </nav>
 
         <div className="mt-auto space-y-1">
-          <NavLink to="/settings" className={sideLink}>
-            <Settings size={18} />
-            Settings
-          </NavLink>
+          <button
+            type="button"
+            onClick={logout}
+            className={sideLink({ isActive: false })}
+          >
+            <LogOut size={18} />
+            Log out
+          </button>
 
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
@@ -711,13 +714,18 @@ function Reports() {
         </div>
 
         <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
-          {[...menu, { label: "Settings", to: "/settings" }].map(
-            ({ label, to }) => (
-              <NavLink key={to} to={to} className={linkClass}>
-                {label}
-              </NavLink>
-            )
-          )}
+          {menu.map(({ label, to }) => (
+            <NavLink key={to} to={to} className={linkClass}>
+              {label}
+            </NavLink>
+          ))}
+          <button
+            type="button"
+            onClick={logout}
+            className={linkClass({ isActive: false })}
+          >
+            Log out
+          </button>
         </div>
 
         {/* Title + controls */}

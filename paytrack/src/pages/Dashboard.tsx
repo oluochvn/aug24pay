@@ -169,72 +169,137 @@ function Dashboard() {
               </div>
             </div>
 
-            <div className="mx-3 grid gap-4 sm:mx-4 md:mx-8 md:gap-6 lg:grid-cols-2">
-              <div className={card}>
-                <p className="text-sm font-semibold">Recent transactions</p>
-                {!loading && data?.recentTransactions.length === 0 && (
-                  <p className="mt-3 text-sm text-gray-500">
-                    No transactions yet. Add your first one to see it here.
-                  </p>
-                )}
-                <ul className="mt-2 divide-y divide-neutral-100">
-                  {data?.recentTransactions.map((t) => (
-                    <li
-                      key={t._id}
-                      className="flex items-center justify-between gap-3 py-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{t.category}</p>
-                        <p className="truncate text-xs text-gray-500">
-                          {t.note ? `${t.note} · ` : ""}
-                          {day(t.date)}
-                        </p>
-                      </div>
-                      <span
-                        className={`shrink-0 text-sm font-medium ${
-                          t.type === "income" ? "text-green-600" : "text-[#ff4d52]"
-                        }`}
-                      >
-                        {t.type === "income" ? "+" : "-"}
-                        {ksh(t.amount)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="mx-3 space-y-4 sm:mx-4 md:mx-8 md:space-y-6">
+              <section className={card}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-semibold">Recent transactions</h2>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Your latest account activity
+                    </p>
+                  </div>
+                  <NavLink
+                    to="/transactions"
+                    className="text-sm font-medium text-indigo-600 hover:underline"
+                  >
+                    View all
+                  </NavLink>
+                </div>
 
-              <div className={card}>
-                <p className="text-sm font-semibold">Saving goals</p>
-                {!loading && data?.goals.length === 0 && (
-                  <p className="mt-3 text-sm text-gray-500">
-                    No goals yet. Create one to start tracking your savings.
-                  </p>
-                )}
-                <ul className="mt-3 space-y-4">
-                  {data?.goals.map((g) => {
-                    const pct = Math.min(
-                      100,
-                      Math.round((g.savedAmount / g.targetAmount) * 100)
-                    );
-                    return (
-                      <li key={g._id}>
-                        <div className="mb-1 flex flex-col gap-0.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                          <span className="truncate font-medium">{g.name}</span>
-                          <span className="text-xs text-gray-500 sm:text-sm">
-                            {ksh(g.savedAmount)} of {ksh(g.targetAmount)}
-                          </span>
+                {!loading && data?.recentTransactions.length === 0 ? (
+                  <div className="mt-4 border-t border-neutral-100 pt-4">
+                    <p className="text-sm text-gray-500">
+                      No transactions yet.
+                    </p>
+                    <NavLink
+                      to="/transactions"
+                      className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
+                    >
+                      Add your first transaction
+                    </NavLink>
+                  </div>
+                ) : (
+                  <ul className="mt-3 divide-y divide-neutral-100">
+                    {data?.recentTransactions.map((t) => (
+                      <li
+                        key={t._id}
+                        className="flex items-center justify-between gap-4 py-3.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {t.category}
+                          </p>
+                          <p className="mt-1 truncate text-xs text-gray-500">
+                            {t.note ? `${t.note} · ` : ""}
+                            {day(t.date)}
+                          </p>
                         </div>
-                        <div className="h-2 w-full rounded-full bg-neutral-200">
-                          <div
-                            className="h-2 rounded-full bg-indigo-500"
-                            style={{ width: `${pct}%` }}
-                          />
+                        <div className="shrink-0 text-right">
+                          <p
+                            className={`text-sm font-semibold ${
+                              t.type === "income"
+                                ? "text-green-600"
+                                : "text-[#ff4d52]"
+                            }`}
+                          >
+                            {t.type === "income" ? "+" : "-"}
+                            {ksh(t.amount)}
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            {t.type === "income" ? "Income" : "Expense"}
+                          </p>
                         </div>
                       </li>
-                    );
-                  })}
-                </ul>
-              </div>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <section className={card}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-semibold">Savings goals</h2>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Progress toward your savings goals
+                    </p>
+                  </div>
+                  <NavLink
+                    to="/savings"
+                    className="text-sm font-medium text-indigo-600 hover:underline"
+                  >
+                    View goals
+                  </NavLink>
+                </div>
+
+                {!loading && data?.goals.length === 0 ? (
+                  <div className="mt-4 border-t border-neutral-100 pt-4">
+                    <p className="text-sm text-gray-500">
+                      No savings goals yet.
+                    </p>
+                    <NavLink
+                      to="/savings"
+                      className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
+                    >
+                      Create a goal
+                    </NavLink>
+                  </div>
+                ) : (
+                  <ul className="mt-3 divide-y divide-neutral-100">
+                    {data?.goals.map((g) => {
+                      const pct =
+                        g.targetAmount > 0
+                          ? Math.min(
+                              100,
+                              Math.round(
+                                (g.savedAmount / g.targetAmount) * 100
+                              )
+                            )
+                          : 0;
+                      return (
+                        <li key={g._id} className="py-4 first:pt-2 last:pb-1">
+                          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                            <span className="truncate text-sm font-medium">
+                              {g.name}
+                            </span>
+                            <span className="text-xs font-medium text-gray-500">
+                              {pct}% complete
+                            </span>
+                          </div>
+                          <div className="mt-2 h-1 w-full bg-neutral-200">
+                            <div
+                              className="h-1 bg-indigo-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <p className="mt-2 text-xs text-gray-500">
+                            {ksh(g.savedAmount)} saved of {ksh(g.targetAmount)}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
             </div>
           </>
         )}

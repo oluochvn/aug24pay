@@ -29,11 +29,12 @@ async function redirectAfterLogin(
   if (!res.ok) {
     throw new Error(data?.message || data?.error || "Could not load your account.");
   }
-  if (!data?.user?.role) {
-    throw new Error("The server did not return your account role.");
+  if (!data?.user) {
+    throw new Error("The server did not return your account.");
   }
 
-  navigate(data.user.role === "admin" ? "/admin" : "/dashboard", {
+  const role = data.user.role ?? "user";
+  navigate(role === "admin" ? "/admin" : "/dashboard", {
     replace: true,
   });
 }

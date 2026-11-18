@@ -51,7 +51,6 @@ export function Card({
 }: PropsWithChildren<{ style?: ViewStyle }>) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
-
 export function Field({
   label,
   ...props

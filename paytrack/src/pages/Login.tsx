@@ -107,7 +107,7 @@ export default function Login() {
         <span className="text-sm font-semibold">paytrack</span>
       </header>
 
-      <main className="relative flex justify-center px-4 pb-10 pt-6 sm:pt-12">
+      <main className="relative  flex justify-center px-4 pb-10 pt-6 sm:pt-12">
         <div className="w-full max-w-md rounded border border-neutral-200 bg-white p-6  sm:p-8">
           <div className="text-center">
             <h1 className="text-2xl font-semibold tracking-tight">

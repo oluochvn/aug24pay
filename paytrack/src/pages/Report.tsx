@@ -657,17 +657,17 @@ function Reports() {
   };
 
   return (
-    <div className="dashboard min-h-screen bg-[#F2F2F2] text-[#111827] lg:flex">
+    <div className="dashboard min-h-screen bg-white text-[#111827] lg:flex">
       {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
         <NavLink to="/dashboard" className="flex items-center gap-2 px-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/70 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </NavLink>
 
-        <nav className="mt-8 space-y-1">
+        <nav className="mt-8 space-y-1 border-b-2 border-white/10 w-45">
           {menu.map(({ label, to, icon: Icon }) => (
             <NavLink key={to} to={to} className={sideLink}>
               <Icon size={18} />

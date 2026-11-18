@@ -1,4 +1,3 @@
-
 import { useState, type PointerEvent as ReactPointerEvent } from "react";
 import { NavLink } from "react-router-dom";
 import {
@@ -47,9 +46,9 @@ interface Transaction {
 const API_URL = "/api";
 
 const ranges = [
-  { label: "1M", value: 6 },
+  { label: "1M", value: 1 },
   { label: "3M", value: 3 },
-  { label: "6M", value: 1 },
+  { label: "6M", value: 6 },
   { label: "12M", value: 12 },
 ];
 
@@ -77,7 +76,6 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
-
 async function fetchTransactions(months: number): Promise<Transaction[]> {
   const token = localStorage.getItem("token");
 
@@ -135,7 +133,6 @@ async function downloadPdf(
   const income = report.income || 0;
   const expenses = report.expenses || 0;
   const categoryTotal = report.categories.reduce((s, c) => s + c.total, 0);
-
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(107, 114, 128);
@@ -158,11 +155,9 @@ async function downloadPdf(
   });
   doc.text(`${period}  |  Generated ${generated}`, M, y);
   y += 28;
-
-  const gap = 16;
+  const gap = 10;
   const boxW = (W - 2 * M - gap) / 2;
   const boxH = 54;
-
   const boxes = [
     { label: "Income", value: ksh(income), color: [22, 163, 74] },
     { label: "Expenses", value: ksh(expenses), color: [255, 77, 82] },
@@ -170,7 +165,6 @@ async function downloadPdf(
 
   boxes.forEach((b, i) => {
     const x = M + i * (boxW + gap);
-
     doc.setDrawColor(229, 229, 229);
     doc.setFillColor(255, 255, 255);
     doc.rect(x, y, boxW, boxH, "FD");
@@ -185,9 +179,7 @@ async function downloadPdf(
     doc.setTextColor(b.color[0], b.color[1], b.color[2]);
     doc.text(b.value, x + 10, y + 38);
   });
-
   y += boxH + 30;
-
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(17, 24, 39);
@@ -231,7 +223,6 @@ async function downloadPdf(
       y = M;
       tableHeader();
     }
-
     const mNet = m.income - m.expenses;
 
     doc.setFont("helvetica", "normal");
@@ -256,7 +247,6 @@ async function downloadPdf(
   });
 
   y += 16;
-
   ensure(60);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -288,15 +278,12 @@ async function downloadPdf(
     const trackW = right - M;
     doc.setFillColor(229, 229, 229);
     doc.rect(M, y, trackW, 6, "F");
-
     if (pct > 0) {
       doc.setFillColor(99, 102, 241);
       doc.rect(M, y, Math.max(6, (trackW * pct) / 100), 6, "F");
     }
-
     y += 24;
   });
-
   y += 10;
   ensure(60);
   doc.setFont("helvetica", "bold");
@@ -371,7 +358,6 @@ async function downloadPdf(
 
     if (isIncome) doc.setTextColor(22, 163, 74);
     else doc.setTextColor(255, 77, 82);
-
     doc.text(`${isIncome ? "+" : "-"}${ksh(t.amount)}`, tc.amount, y, {
       align: "right",
     });
@@ -381,9 +367,7 @@ async function downloadPdf(
     doc.line(M, y, right, y);
     y += 13;
   });
-
   const pages = doc.getNumberOfPages();
-
   for (let i = 1; i <= pages; i++) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
@@ -419,21 +403,18 @@ const niceMax = (v: number) => {
 const smoothPath = (pts: { x: number; y: number }[]) => {
   if (pts.length === 0) return "";
   let d = `M ${pts[0].x} ${pts[0].y}`;
-
   for (let i = 1; i < pts.length; i++) {
     const a = pts[i - 1];
     const b = pts[i];
     const mx = (a.x + b.x) / 2;
     d += ` C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}`;
   }
-
   return d;
 };
 
 function TrendChart({ months }: { months: MonthData[] }) {
   const [hover, setHover] = useState<number | null>(null);
   const n = months.length;
-
   if (n === 0) return null;
 
   const max = niceMax(Math.max(...months.flatMap((m) => [m.income, m.expenses])));
@@ -451,7 +432,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
   const inc = toPoints("income");
   const exp = toPoints("expenses");
   const incPath = smoothPath(inc);
-
   const areaPath =
     n > 1 ? `${incPath} L ${inc[n - 1].x} ${CHART_H} L ${inc[0].x} ${CHART_H} Z` : "";
 
@@ -464,7 +444,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
       setHover(0);
       return;
     }
-
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = ((e.clientX - rect.left) / rect.width) * 100;
     const idx = Math.round(((pct - X_START) / X_SPAN) * (n - 1));
@@ -474,6 +453,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
   return (
     <div className="mt-4 pt-16">
       <div className="flex">
+        
         <div className="relative h-48 w-11 shrink-0">
           {ticks.map((t, i) => (
             <span
@@ -486,6 +466,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
           ))}
         </div>
 
+        
         <div
           className="relative h-48 min-w-0 flex-1 touch-pan-y"
           onPointerMove={handleMove}
@@ -538,21 +519,23 @@ function TrendChart({ months }: { months: MonthData[] }) {
             )}
           </svg>
 
+          
           <div
             className="pointer-events-none absolute inset-y-0 border-l border-dashed border-[#7180ff]"
             style={{ left: activeLeft }}
           />
 
+          
           <span
             className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-gray-400"
             style={{ left: activeLeft, top: `${yPct(am.expenses)}%` }}
           />
-
           <span
             className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#6d78d5] shadow"
             style={{ left: activeLeft, top: `${yPct(am.income)}%` }}
           />
 
+          
           <div
             className="pointer-events-none absolute z-10 w-max -translate-x-1/2 -translate-y-full rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-lg"
             style={{
@@ -575,6 +558,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
         </div>
       </div>
 
+      
       <div className="flex">
         <div className="w-11 shrink-0" />
         <div className="relative mt-2 h-4 min-w-0 flex-1">
@@ -596,7 +580,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
 }
 
 function Reports() {
-  const [months, setMonths] = useState(6);
+  const [months, setMonths] = useState(3);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
 
@@ -621,7 +605,6 @@ function Reports() {
     if (!report || exporting) return;
     setExportError("");
     setExporting(true);
-
     try {
       const transactions = await fetchTransactions(months);
       await downloadPdf(report, months, transactions);
@@ -638,6 +621,7 @@ function Reports() {
 
   return (
     <div className="dashboard min-h-screen bg-white text-[#111827] lg:flex">
+      
       <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
         <NavLink to="/dashboard" className="flex items-center gap-2 px-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black text-white">
@@ -682,7 +666,9 @@ function Reports() {
         </div>
       </aside>
 
+      
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
+        
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
             <Wallet size={18} />
@@ -705,6 +691,7 @@ function Reports() {
           </button>
         </div>
 
+        
         <div className="mx-3 mt-6 flex flex-wrap items-end justify-between gap-3 sm:mx-4 md:mx-8">
           <div>
             <h1 className="text-2xl font-semibold">Reports</h1>
@@ -753,6 +740,7 @@ function Reports() {
 
         {(!error || report) && (
           <>
+            
             <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-2 md:gap-6">
               {stats.map((s) => (
                 <div key={s.label} className={card}>
@@ -767,6 +755,7 @@ function Reports() {
             </div>
 
             <div className="mx-3 space-y-4 sm:mx-4 md:mx-8 md:space-y-6">
+              
               <div className={card}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold">Income vs expenses</p>
@@ -791,6 +780,7 @@ function Reports() {
                 )}
               </div>
 
+              
               <div className={card}>
                 <p className="text-sm font-semibold">Spending by category</p>
 
@@ -805,7 +795,6 @@ function Reports() {
                     const pct = categoryTotal
                       ? Math.round((c.total / categoryTotal) * 100)
                       : 0;
-
                     return (
                       <li key={c.category}>
                         <div className="mb-1 flex flex-col gap-0.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
@@ -814,7 +803,6 @@ function Reports() {
                             {ksh(c.total)} · {pct}%
                           </span>
                         </div>
-
                         <div className="h-2 w-full rounded-full bg-neutral-200">
                           <div
                             className="h-2 rounded-full bg-indigo-500"

@@ -9,6 +9,35 @@ const API = "/api";
 const inputClass =
   "w-full rounded border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100";
 
+type ProfileResponse = {
+  user?: {
+    role?: string;
+  };
+  message?: string;
+  error?: string;
+};
+
+async function redirectAfterLogin(
+  token: string,
+  navigate: ReturnType<typeof useNavigate>
+) {
+  const res = await fetch(`${API}/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = (await res.json().catch(() => null)) as ProfileResponse | null;
+
+  if (!res.ok) {
+    throw new Error(data?.message || data?.error || "Could not load your account.");
+  }
+  if (!data?.user?.role) {
+    throw new Error("The server did not return your account role.");
+  }
+
+  navigate(data.user.role === "admin" ? "/admin" : "/dashboard", {
+    replace: true,
+  });
+}
+
 export default function Login() {
   const navigate = useNavigate();
 
@@ -30,7 +59,15 @@ export default function Login() {
         "",
         window.location.pathname + window.location.search
       );
-      navigate("/dashboard", { replace: true });
+      redirectAfterLogin(token, navigate).catch((err: unknown) => {
+        localStorage.removeItem("token");
+        clearCache();
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Could not load your account. Please try again."
+        );
+      });
     }
 
     const query = new URLSearchParams(window.location.search);
@@ -77,10 +114,14 @@ export default function Login() {
 
       localStorage.setItem("token", data.token);
       clearCache();
-      navigate("/dashboard");
-    } catch {
+      await redirectAfterLogin(data.token, navigate);
+    } catch (err: unknown) {
+      localStorage.removeItem("token");
+      clearCache();
       setError(
-        "Could not reach the server. Please check your connection and try again."
+        err instanceof Error && err.name !== "TypeError"
+          ? err.message
+          : "Could not reach the server. Please check your connection and try again."
       );
     } finally {
       setLoading(false);

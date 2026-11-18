@@ -30,3 +30,25 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Admin API contract
+
+The web app uses the separately hosted API configured by `vercel.json`. To enable
+the admin dashboard, the backend should enforce authorization on every admin
+route and provide:
+
+- `GET /me` with `{ "user": { "id": "...", "role": "admin" | "user" } }`.
+- `GET /admin/users` with `{ "users": [...] }`. Each user includes `id`,
+  `username`, `email`, `role`, `status` (`pending` or `approved`),
+  `lastLoginAt` (ISO date or `null`), and `createdAt` (ISO date).
+- `POST /admin/users` accepting `{ "username", "email", "password" }`. A user
+  created by an admin should be approved immediately.
+- `PATCH /admin/users/:id/approve` to approve a pending registration.
+- `DELETE /admin/users/:id` to delete a user.
+
+All admin endpoints must require an authenticated admin bearer token. Public
+registrations should remain pending and be denied login until approved by an
+admin (for example, return `403` with a clear approval message from `POST /login`).
+Return `401` for expired/invalid sessions and `403` for authenticated users
+without admin privileges. The backend should also prevent an admin from deleting
+their own account or the last remaining admin.

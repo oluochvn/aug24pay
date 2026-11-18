@@ -27,7 +27,6 @@ export default function LoginScreen() {
       setError("Enter your email and password.");
       return;
     }
-
     setBusy(true);
     try {
       const result = await apiRequest<{ token?: string }>("/login", {

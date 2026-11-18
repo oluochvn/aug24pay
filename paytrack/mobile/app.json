@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Paytrack",
+    "slug": "paytrack",
+    "version": "1.0.0",
+    "scheme": "paytrack",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.paytrack.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#171717",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-router",
+      "expo-status-bar"
+    ],
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "ca685a3d-a189-4253-8128-9087db8138d8"
+      }
+    },
+    "owner": "oluochvn"
+  }
+}

@@ -6,7 +6,6 @@ const inputClass =
   "w-full border border-[#292a2d] bg-[#1c1c1d] px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-[#6b6f76] focus:border-[#7180ff] focus:ring-2 focus:ring-[#7180ff]/20";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#e2e3e5]";
-
 export default function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -21,19 +20,15 @@ export default function Register() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-
     if (password !== confirmPassword) {
       setError("Passwords do not match. Please check and try again");
       return;
     }
-
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
-
     setLoading(true);
-
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -46,21 +41,17 @@ export default function Register() {
           password,
         }),
       });
-
       let data: any = null;
       try {
         data = await res.json();
       } catch {
-        // The server sent no JSON body; fall back to the default message.
       }
-
       if (!res.ok) {
         const message =
           data?.message || data?.error || "Registration failed. Please try again.";
         setError(message);
         return;
       }
-
       navigate("/login");
     } catch (err) {
       setError("Could not reach the server. Please check your connection and try again.");
@@ -68,7 +59,6 @@ export default function Register() {
       setLoading(false);
     }
   };
-
   return (
     <div
       className="min-h-screen w-full bg-[#09090A] text-white"
@@ -80,7 +70,6 @@ export default function Register() {
         </div>
         <span className="text-sm font-semibold">paytrack</span>
       </header>
-
       <main className="flex justify-center px-4 pb-10 pt-2 sm:pt-6">
         <div className="w-full max-w-md border border-[#212224] bg-[#121213] p-6 sm:p-8">
           <div className="text-center">
@@ -91,7 +80,6 @@ export default function Register() {
               Sign up to get started with paytrack
             </p>
           </div>
-
           <button
             type="button"
             className="mt-6 flex w-full items-center justify-center gap-2.5 border border-[#ffffff22] bg-[#1c1c1d] py-3 text-sm font-medium text-[#e2e3e5] transition-colors hover:bg-[#252627]"
@@ -116,13 +104,11 @@ export default function Register() {
             </svg>
             Continue with Google
           </button>
-
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-[#212224]" />
             <span className="text-xs text-[#97979a]">or</span>
             <div className="h-px flex-1 bg-[#212224]" />
           </div>
-
           {error && (
             <div
               role="alert"
@@ -132,7 +118,6 @@ export default function Register() {
               <span>{error}</span>
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
               <label htmlFor="name" className={labelClass}>
@@ -149,7 +134,6 @@ export default function Register() {
                 className={inputClass}
               />
             </div>
-
             <div>
               <label htmlFor="email" className={labelClass}>
                 Email
@@ -165,7 +149,6 @@ export default function Register() {
                 className={inputClass}
               />
             </div>
-
             <div>
               <label htmlFor="password" className={labelClass}>
                 Password
@@ -199,7 +182,6 @@ export default function Register() {
                 At least 6 characters
               </p>
             </div>
-
             <div>
               <label htmlFor="confirmPassword" className={labelClass}>
                 Confirm password
@@ -231,7 +213,6 @@ export default function Register() {
                 </button>
               </div>
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -240,7 +221,6 @@ export default function Register() {
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
-
           <p className="mt-6 text-center text-sm text-[#97979a]">
             Already have an account?{" "}
             <button

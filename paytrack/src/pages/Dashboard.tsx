@@ -8,6 +8,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { logout, useApi } from "../lib/useApi";
+import { useCurrency } from "../lib/useCurrency";
 
 interface Transaction {
   _id: string;
@@ -34,7 +35,6 @@ interface Summary {
   goals: Goal[];
 }
 
-const ksh = (n?: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
 const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short" });
 
@@ -61,7 +61,15 @@ const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 
 function Dashboard() {
   const { data, loading, error } = useApi<Summary>("/summary");
-
+  const {
+    currency,
+    setCurrency,
+    kesPerUsd,
+    rateUpdatedAt,
+    rateLoading,
+    rateError,
+    formatMoney,
+  } = useCurrency();
   const username = data?.user?.username || "";
 
   return (
@@ -141,30 +149,59 @@ function Dashboard() {
 
         {(!error || data) && (
           <>
-            <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
-              <h1 className="text-2xl font-semibold">Dashboard</h1>
-              <p className="text-sm text-gray-500">Take Control of Your Money</p>
+            <div className="mx-3 mt-6 flex flex-wrap items-end justify-between gap-4 sm:mx-4 md:mx-8">
+              <div>
+                <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <p className="text-sm text-gray-500">
+                  Take Control of Your Money
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  id="summary-currency"
+                  aria-label="Currency"
+                  title={
+                    rateError
+                      ? `Exchange rate unavailable: ${rateError}`
+                      : rateLoading
+                        ? "Loading exchange rate"
+                        : `1 USD = ${kesPerUsd?.toLocaleString("en-KE")} KSH${
+                            rateUpdatedAt ? ` · Updated ${rateUpdatedAt}` : ""
+                          }`
+                  }
+                  value={currency}
+                  onChange={(event) =>
+                    setCurrency(event.target.value === "USD" ? "USD" : "KSH")
+                  }
+                  className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm"
+                >
+                  <option value="KSH">KSH</option>
+                  <option value="USD" disabled={kesPerUsd === null}>
+                    USD
+                  </option>
+                </select>
+              </div>
             </div>
 
             <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">
               <div className={`col-span-2 md:col-span-1 ${card}`}>
                 <p className="text-sm text-gray-500">Total Balance</p>
                 <p className="mt-1 break-words text-xl font-semibold sm:text-2xl">
-                  {loading ? "..." : ksh(data?.balance)}
+                  {loading ? "..." : formatMoney(data?.balance)}
                 </p>
               </div>
 
               <div className={card}>
                 <p className="text-sm text-gray-500">Income</p>
                 <p className="mt-1 break-words text-lg font-semibold text-black sm:text-2xl">
-                  {loading ? "..." : ksh(data?.income)}
+                  {loading ? "..." : formatMoney(data?.income)}
                 </p>
               </div>
 
               <div className={card}>
                 <p className="text-sm text-gray-500">Expense</p>
                 <p className="mt-1 break-words text-lg font-semibold text-black/80 sm:text-2xl">
-                  {loading ? "..." : ksh(data?.expenses)}
+                  {loading ? "..." : formatMoney(data?.expenses)}
                 </p>
               </div>
             </div>
@@ -223,7 +260,7 @@ function Dashboard() {
                             }`}
                           >
                             {t.type === "income" ? "+" : "-"}
-                            {ksh(t.amount)}
+                            {formatMoney(t.amount)}
                           </p>
                           <p className="mt-1 text-xs text-gray-500">
                             {t.type === "income" ? "Income" : "Expense"}
@@ -292,7 +329,8 @@ function Dashboard() {
                             />
                           </div>
                           <p className="mt-2 text-xs text-gray-500">
-                            {ksh(g.savedAmount)} saved of {ksh(g.targetAmount)}
+                            {formatMoney(g.savedAmount)} saved of{" "}
+                            {formatMoney(g.targetAmount)}
                           </p>
                         </li>
                       );

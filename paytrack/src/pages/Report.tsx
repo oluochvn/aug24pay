@@ -10,6 +10,11 @@ import {
   Download,
 } from "lucide-react";
 import { logout, useApi } from "../lib/useApi";
+import {
+  type Currency,
+  formatCurrency,
+} from "../lib/currency-utils";
+import { useCurrency } from "../lib/useCurrency";
 
 interface MonthData {
   label: string;
@@ -58,10 +63,6 @@ const menu = [
   { label: "Savings", to: "/savings", icon: PiggyBank },
   { label: "Reports", to: "/reports", icon: BarChart3 },
 ];
-
-const ksh = (n?: number) => `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
-
-const signedKsh = (n: number) => `${n < 0 ? "-" : ""}${ksh(Math.abs(n))}`;
 
 const sideLink = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
@@ -112,7 +113,9 @@ async function fetchTransactions(months: number): Promise<Transaction[]> {
 async function downloadPdf(
   report: Report,
   months: number,
-  transactions: Transaction[]
+  transactions: Transaction[],
+  currency: Currency,
+  kesPerUsd: number | null
 ) {
   const { jsPDF } = await import("jspdf");
 
@@ -133,6 +136,10 @@ async function downloadPdf(
   const income = report.income || 0;
   const expenses = report.expenses || 0;
   const categoryTotal = report.categories.reduce((s, c) => s + c.total, 0);
+  const money = (amount: number) =>
+    formatCurrency(amount, currency, kesPerUsd);
+  const signedMoney = (amount: number) =>
+    `${amount < 0 ? "-" : ""}${money(Math.abs(amount))}`;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(107, 114, 128);
@@ -159,8 +166,8 @@ async function downloadPdf(
   const boxW = (W - 2 * M - gap) / 2;
   const boxH = 54;
   const boxes = [
-    { label: "Income", value: ksh(income), color: [22, 163, 74] },
-    { label: "Expenses", value: ksh(expenses), color: [255, 77, 82] },
+    { label: "Income", value: money(income), color: [22, 163, 74] },
+    { label: "Expenses", value: money(expenses), color: [255, 77, 82] },
   ];
 
   boxes.forEach((b, i) => {
@@ -231,14 +238,14 @@ async function downloadPdf(
     doc.text(`${m.label} ${m.year}`, cols.month, y);
 
     doc.setTextColor(22, 163, 74);
-    doc.text(ksh(m.income), cols.income, y, { align: "right" });
+    doc.text(money(m.income), cols.income, y, { align: "right" });
 
     doc.setTextColor(255, 77, 82);
-    doc.text(ksh(m.expenses), cols.expenses, y, { align: "right" });
+    doc.text(money(m.expenses), cols.expenses, y, { align: "right" });
 
     if (mNet < 0) doc.setTextColor(255, 77, 82);
     else doc.setTextColor(17, 24, 39);
-    doc.text(signedKsh(mNet), cols.net, y, { align: "right" });
+    doc.text(signedMoney(mNet), cols.net, y, { align: "right" });
 
     y += 8;
     doc.setDrawColor(240, 240, 240);
@@ -272,7 +279,7 @@ async function downloadPdf(
     doc.text(c.category, M, y);
 
     doc.setTextColor(107, 114, 128);
-    doc.text(`${ksh(c.total)} - ${pct}%`, right, y, { align: "right" });
+    doc.text(`${money(c.total)} - ${pct}%`, right, y, { align: "right" });
 
     y += 8;
     const trackW = right - M;
@@ -358,7 +365,7 @@ async function downloadPdf(
 
     if (isIncome) doc.setTextColor(22, 163, 74);
     else doc.setTextColor(255, 77, 82);
-    doc.text(`${isIncome ? "+" : "-"}${ksh(t.amount)}`, tc.amount, y, {
+    doc.text(`${isIncome ? "+" : "-"}${money(t.amount)}`, tc.amount, y, {
       align: "right",
     });
 
@@ -414,11 +421,18 @@ const smoothPath = (pts: { x: number; y: number }[]) => {
 
 function TrendChart({ months }: { months: MonthData[] }) {
   const [hover, setHover] = useState<number | null>(null);
+  const { currency, kesPerUsd, formatMoney } = useCurrency();
   const n = months.length;
   if (n === 0) return null;
 
   const max = niceMax(Math.max(...months.flatMap((m) => [m.income, m.expenses])));
   const ticks = [0, 1, 2, 3, 4].map((i) => (max / 4) * i);
+  const formatTick = (amount: number) =>
+    currency === "USD"
+      ? kesPerUsd === null
+        ? "--"
+        : `$${compact(amount / kesPerUsd)}`
+      : compact(amount);
 
   const xPct = (i: number) => (n === 1 ? 50 : X_START + (i / (n - 1)) * X_SPAN);
   const yPct = (v: number) => 100 - (v / max) * 100;
@@ -461,7 +475,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
               className="absolute right-2 translate-y-1/2 text-xs tabular-nums text-gray-500"
               style={{ bottom: `${(i / 4) * 100}%` }}
             >
-              {compact(t)}
+              {formatTick(t)}
             </span>
           ))}
         </div>
@@ -548,11 +562,11 @@ function TrendChart({ months }: { months: MonthData[] }) {
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
               <span className="h-2 w-2 rounded-full bg-[#6d78d5]" />
-              Income: {ksh(am.income)}
+              Income: {formatMoney(am.income)}
             </p>
             <p className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-600">
               <span className="h-2 w-2 rounded-full bg-gray-400" />
-              Expenses: {ksh(am.expenses)}
+              Expenses: {formatMoney(am.expenses)}
             </p>
           </div>
         </div>
@@ -580,6 +594,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
 }
 
 function Reports() {
+  const { currency, kesPerUsd, formatMoney } = useCurrency();
   const [months, setMonths] = useState(3);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
@@ -597,8 +612,8 @@ function Reports() {
   const categoryTotal = report?.categories.reduce((s, c) => s + c.total, 0) || 0;
 
   const stats = [
-    { label: "Income", value: ksh(income), color: "text-black" },
-    { label: "Expenses", value: ksh(expenses), color: "text-black" },
+    { label: "Income", value: formatMoney(income), color: "text-black" },
+    { label: "Expenses", value: formatMoney(expenses), color: "text-black" },
   ];
 
   const handleDownload = async () => {
@@ -607,7 +622,7 @@ function Reports() {
     setExporting(true);
     try {
       const transactions = await fetchTransactions(months);
-      await downloadPdf(report, months, transactions);
+      await downloadPdf(report, months, transactions, currency, kesPerUsd);
     } catch (err) {
       setExportError(
         err instanceof Error && err.message
@@ -717,7 +732,12 @@ function Reports() {
             <button
               type="button"
               onClick={handleDownload}
-              disabled={!report || loading || exporting}
+              disabled={
+                !report ||
+                loading ||
+                exporting ||
+                (currency === "USD" && kesPerUsd === null)
+              }
               className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-1.5 text-sm text-[#111827] transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download size={14} />
@@ -725,13 +745,11 @@ function Reports() {
             </button>
           </div>
         </div>
-
         {exportError && (
           <p className="mx-3 mt-3 text-xs text-red-500 sm:mx-4 md:mx-8">
             {exportError}
           </p>
         )}
-
         {error && !report && (
           <div className={`mx-3 mt-6 text-sm text-gray-500 sm:mx-4 md:mx-8 md:mt-8 ${card}`}>
             {error}
@@ -740,7 +758,6 @@ function Reports() {
 
         {(!error || report) && (
           <>
-            
             <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-2 md:gap-6">
               {stats.map((s) => (
                 <div key={s.label} className={card}>
@@ -753,9 +770,7 @@ function Reports() {
                 </div>
               ))}
             </div>
-
             <div className="mx-3 space-y-4 sm:mx-4 md:mx-8 md:space-y-6">
-              
               <div className={card}>
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-semibold">Income vs expenses</p>
@@ -770,7 +785,6 @@ function Reports() {
                     </span>
                   </div>
                 </div>
-
                 {!loading && income === 0 && expenses === 0 ? (
                   <p className="mt-3 text-sm text-gray-500">
                     No transactions in this period yet.
@@ -779,8 +793,6 @@ function Reports() {
                   <TrendChart months={report?.months ?? []} />
                 )}
               </div>
-
-              
               <div className={card}>
                 <p className="text-sm font-semibold">Spending by category</p>
 
@@ -789,7 +801,6 @@ function Reports() {
                     No expenses in this period yet.
                   </p>
                 )}
-
                 <ul className="mt-3 space-y-4">
                   {report?.categories.map((c) => {
                     const pct = categoryTotal
@@ -800,7 +811,7 @@ function Reports() {
                         <div className="mb-1 flex flex-col gap-0.5 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                           <span className="truncate font-medium">{c.category}</span>
                           <span className="shrink-0 text-xs text-gray-500 sm:text-sm">
-                            {ksh(c.total)} · {pct}%
+                            {formatMoney(c.total)} · {pct}%
                           </span>
                         </div>
                         <div className="h-2 w-full rounded-full bg-neutral-200">

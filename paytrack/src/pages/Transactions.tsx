@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useApi, invalidate, logout } from "../lib/useApi";
+import { useCurrency } from "../lib/useCurrency";
 
 const API = "/api";
 const TX = "/transactions";
@@ -77,9 +78,6 @@ const emptyForm = (): FormState => ({
   note: "",
   date: today(),
 });
-
-const ksh = (n: number) =>
-  `KSH ${Number(n || 0).toLocaleString("en-KE")}`;
 
 const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", {
@@ -149,6 +147,7 @@ const refreshCaches = () => {
 
 function Transactions() {
   const navigate = useNavigate();
+  const { currency, kesPerUsd, formatMoney, toKsh, fromKsh } = useCurrency();
 
   // Shared cache with the other pages, so the sidebar name needs no extra request.
   const { data: summary } = useApi<{ user?: { username?: string } }>(
@@ -211,11 +210,23 @@ function Transactions() {
       return;
     }
 
+    const enteredAmount = Number(form.amount);
+    if (!Number.isFinite(enteredAmount) || enteredAmount <= 0) {
+      setError("Enter a valid transaction amount.");
+      return;
+    }
+
+    const amount = toKsh(enteredAmount);
+    if (amount === null) {
+      setError("The USD exchange rate is unavailable. Switch to KSH and try again.");
+      return;
+    }
+
     setSaving(true);
 
     const payload = {
       type: form.type,
-      amount: Number(form.amount),
+      amount,
       category: form.category,
       note: form.note.trim(),
       date: form.date,
@@ -246,10 +257,14 @@ function Transactions() {
 
   const startEdit = (t: Transaction) => {
     setEditingId(t._id);
+    const displayAmount = fromKsh(t.amount);
 
     setForm({
       type: t.type,
-      amount: String(t.amount),
+      amount:
+        currency === "USD"
+          ? displayAmount?.toFixed(2) ?? ""
+          : String(t.amount),
       category: t.category,
       note: t.note || "",
       date: t.date.slice(0, 10),
@@ -381,14 +396,14 @@ function Transactions() {
           <div className={card}>
             <p className="text-sm text-gray-500">Total income</p>
             <p className="mt-1 break-words text-lg font-semibold text-black sm:text-2xl">
-              {loading ? "..." : ksh(income)}
+              {loading ? "..." : formatMoney(income)}
             </p>
           </div>
 
           <div className={card}>
             <p className="text-sm text-gray-500">Total expenses</p>
             <p className="mt-1 break-words text-lg font-semibold text-black/70 sm:text-2xl">
-              {loading ? "..." : ksh(expenses)}
+              {loading ? "..." : formatMoney(expenses)}
             </p>
           </div>
         </div>
@@ -441,13 +456,14 @@ function Transactions() {
             {/* Amount */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500">
-                Amount (KSH)
+                Amount ({currency})
               </label>
 
               <input
                 type="number"
                 min="0.01"
                 step="any"
+                disabled={currency === "USD" && kesPerUsd === null}
                 required
                 placeholder="0.00"
                 value={form.amount}
@@ -615,7 +631,7 @@ function Transactions() {
                     }`}
                   >
                     {t.type === "income" ? "+" : "-"}
-                    {ksh(t.amount)}
+                    {formatMoney(t.amount)}
                   </span>
 
                   <div className="flex items-center gap-1">

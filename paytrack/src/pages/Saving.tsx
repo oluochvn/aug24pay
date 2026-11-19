@@ -9,6 +9,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useApi, invalidate, logout } from "../lib/useApi";
+import { useCurrency } from "../lib/useCurrency";
 
 interface Goal {
   _id: string;
@@ -16,37 +17,27 @@ interface Goal {
   targetAmount: number;
   savedAmount: number;
 }
-
 interface Summary {
   user?: { username?: string };
 }
-
 const API_URL = "/api";
-
 const menu = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
   { label: "Savings", to: "/savings", icon: PiggyBank },
   { label: "Reports", to: "/reports", icon: BarChart3 },
 ];
-
 const sideLink = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
     isActive
       ? "bg-white font-medium text-[#111827] shadow-sm"
       : "text-gray-500 hover:bg-white/60"
   }`;
-
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
     isActive ? "bg-[#111827] text-white" : "bg-white text-gray-600"
   }`;
-
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
-
-const formatMoney = (amount: number) =>
-  `KSH ${Number(amount || 0).toLocaleString("en-KE")}`;
-
 async function apiRequest<T>(
   endpoint: string,
   method = "GET",
@@ -62,15 +53,12 @@ async function apiRequest<T>(
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
-
   if (response.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
     throw new Error("Session expired. Please log in again.");
   }
-
   const result = await response.json().catch(() => null);
-
   if (!response.ok) {
     throw new Error(
       result?.message ||
@@ -78,77 +66,67 @@ async function apiRequest<T>(
         "Something went wrong. Please try again."
     );
   }
-
   return result as T;
 }
-
 export default function Savings() {
+  const { currency, kesPerUsd, formatMoney, toKsh, fromKsh } = useCurrency();
   const { data, loading, error, update } = useApi<Goal[]>("/goals");
   const { data: summary } = useApi<Summary>("/summary");
-
   const username = summary?.user?.username || "";
-
   const goals = data ?? [];
-
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const [depositId, setDepositId] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState("");
-
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [formError, setFormError] = useState("");
-
   const totalSaved = goals.reduce(
     (total, goal) => total + Number(goal.savedAmount || 0),
     0
   );
-
   const totalTarget = goals.reduce(
     (total, goal) => total + Number(goal.targetAmount || 0),
     0
   );
-
   const remaining = Math.max(totalTarget - totalSaved, 0);
-
   const overallProgress =
     totalTarget > 0
       ? Math.min((totalSaved / totalTarget) * 100, 100)
       : 0;
-
   const resetForm = () => {
     setName("");
     setTargetAmount("");
     setEditingId(null);
     setFormError("");
   };
-
   const refreshSummary = async () => {
     await invalidate("/summary");
   };
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setFormError("");
     setMessage("");
-
-    const amount = Number(targetAmount);
-
+    const enteredAmount = Number(targetAmount);
     if (!name.trim()) {
       setFormError("Enter a savings goal name.");
       return;
     }
-
-    if (!Number.isFinite(amount) || amount < 1) {
+    if (!Number.isFinite(enteredAmount) || enteredAmount <= 0) {
       setFormError("Enter a valid target amount.");
       return;
     }
-
+    const amount = toKsh(enteredAmount);
+    if (amount === null) {
+      setFormError("The USD exchange rate is unavailable. Switch to KSH and try again.");
+      return;
+    }
+    if (amount < 1) {
+      setFormError("The target amount must be at least KSH 1.");
+      return;
+    }
     setBusy(true);
-
     try {
       if (editingId) {
         const updatedGoal = await apiRequest<Goal>(
@@ -159,13 +137,11 @@ export default function Savings() {
             targetAmount: amount,
           }
         );
-
         update(
           goals.map((goal) =>
             goal._id === editingId ? { ...goal, ...updatedGoal } : goal
           )
         );
-
         setMessage("Goal updated.");
       } else {
         const newGoal = await apiRequest<Goal>("/goals", "POST", {
@@ -177,7 +153,6 @@ export default function Savings() {
 
         setMessage("Savings goal created.");
       }
-
       resetForm();
       await refreshSummary();
     } catch (err) {
@@ -188,54 +163,52 @@ export default function Savings() {
       setBusy(false);
     }
   };
-
   const handleEdit = (goal: Goal) => {
     setEditingId(goal._id);
     setName(goal.name);
-    setTargetAmount(String(goal.targetAmount));
+    const displayAmount = fromKsh(goal.targetAmount);
+    setTargetAmount(
+      currency === "USD"
+        ? displayAmount?.toFixed(2) ?? ""
+        : String(goal.targetAmount)
+    );
     setFormError("");
     setMessage("");
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
   const handleDeposit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!depositId) return;
-
-    const amount = Number(depositAmount);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
+    const enteredAmount = Number(depositAmount);
+    if (!Number.isFinite(enteredAmount) || enteredAmount <= 0) {
       setFormError("Enter a valid deposit amount.");
       return;
     }
-
+    const amount = toKsh(enteredAmount);
+    if (amount === null) {
+      setFormError("The USD exchange rate is unavailable. Switch to KSH and try again.");
+      return;
+    }
     const selectedGoal = goals.find((goal) => goal._id === depositId);
-
     if (!selectedGoal) return;
-
     setBusy(true);
     setFormError("");
     setMessage("");
-
     try {
       const updatedGoal = await apiRequest<Goal>(
         `/goals/${depositId}/deposit`,
         "PATCH",
         { amount }
       );
-
       update(
         goals.map((goal) =>
           goal._id === depositId ? { ...goal, ...updatedGoal } : goal
         )
       );
-
       setDepositId(null);
       setDepositAmount("");
       setMessage("Deposit added.");
-
       await refreshSummary();
     } catch (err) {
       setFormError(
@@ -245,30 +218,22 @@ export default function Savings() {
       setBusy(false);
     }
   };
-
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this savings goal?"
     );
-
     if (!confirmed) return;
-
     setBusy(true);
     setFormError("");
     setMessage("");
-
     try {
       await apiRequest(`/goals/${id}`, "DELETE");
-
       update(goals.filter((goal) => goal._id !== id));
-
       if (editingId === id) resetForm();
-
       if (depositId === id) {
         setDepositId(null);
         setDepositAmount("");
       }
-
       setMessage("Savings goal deleted.");
       await refreshSummary();
     } catch (err) {
@@ -279,10 +244,8 @@ export default function Savings() {
       setBusy(false);
     }
   };
-
   return (
     <div className="dashboard min-h-screen bg-white text-[#111827] lg:flex">
-      {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
         <NavLink to="/dashboard" className="flex items-center gap-2 px-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-black text-white">
@@ -290,7 +253,6 @@ export default function Savings() {
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </NavLink>
-
         <nav className="mt-8 space-y-1 border-b-2 border-white/10">
           {menu.map(({ label, to, icon: Icon }) => (
             <NavLink key={to} to={to} className={sideLink}>
@@ -299,7 +261,6 @@ export default function Savings() {
             </NavLink>
           ))}
         </nav>
-
         <div className="mt-auto space-y-1">
           <button
             type="button"
@@ -309,7 +270,6 @@ export default function Savings() {
             <LogOut size={18} />
             Log out
           </button>
-
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
@@ -326,17 +286,13 @@ export default function Savings() {
           </div>
         </div>
       </aside>
-
-      {/* Main content */}
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
-        {/* Mobile header */}
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </div>
-
         <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
           {menu.map(({ label, to }) => (
             <NavLink key={to} to={to} className={linkClass}>
@@ -351,15 +307,12 @@ export default function Savings() {
             Log out
           </button>
         </div>
-
         <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
           <h1 className="text-2xl font-semibold">Savings</h1>
           <p className="text-sm text-gray-500">
             Keep track of what you're putting aside
           </p>
         </div>
-
-        {/* Summary */}
         <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">
           <div className={`col-span-2 md:col-span-1 ${card}`}>
             <p className="text-sm text-gray-500">Total saved</p>
@@ -367,14 +320,12 @@ export default function Savings() {
               {loading ? "..." : formatMoney(totalSaved)}
             </p>
           </div>
-
           <div className={card}>
             <p className="text-sm text-gray-500">Target amount</p>
             <p className="mt-1 break-words text-lg font-semibold sm:text-2xl">
               {loading ? "..." : formatMoney(totalTarget)}
             </p>
           </div>
-
           <div className={card}>
             <p className="text-sm text-gray-500">Still to save</p>
             <p className="mt-1 break-words text-lg font-semibold sm:text-2xl">
@@ -382,9 +333,7 @@ export default function Savings() {
             </p>
           </div>
         </div>
-
         <div className="mx-3 space-y-4 sm:mx-4 md:mx-8 md:space-y-6">
-          {/* Overall progress */}
           <section className={card}>
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -393,26 +342,21 @@ export default function Savings() {
                   Your progress across all savings goals
                 </p>
               </div>
-
               <span className="text-sm font-semibold tabular-nums">
                 {overallProgress.toFixed(0)}%
               </span>
             </div>
-
             <div className="mt-3 h-2 w-full rounded-full bg-neutral-200">
               <div
                 className="h-2 rounded-full bg-indigo-500 transition-all"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-
             <div className="mt-2 flex justify-between text-xs text-gray-500">
               <span>{formatMoney(totalSaved)} saved</span>
               <span>{formatMoney(totalTarget)} target</span>
             </div>
           </section>
-
-          {/* Create / edit goal */}
           <section className={card}>
             <p className="text-sm font-semibold">
               {editingId ? "Edit savings goal" : "Create a savings goal"}
@@ -422,7 +366,6 @@ export default function Savings() {
                 ? "Update the details of your goal."
                 : "Give your savings a clear target."}
             </p>
-
             <form onSubmit={handleSubmit} className="mt-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
@@ -432,7 +375,6 @@ export default function Savings() {
                   >
                     Goal name
                   </label>
-
                   <input
                     id="goalName"
                     type="text"
@@ -442,19 +384,19 @@ export default function Savings() {
                     className="w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-neutral-400 focus:bg-white"
                   />
                 </div>
-
                 <div>
                   <label
                     htmlFor="targetAmount"
                     className="mb-1.5 block text-xs font-medium text-gray-600"
                   >
-                    Target amount (KSH)
+                    Target amount ({currency})
                   </label>
-
                   <input
                     id="targetAmount"
                     type="number"
-                    min="1"
+                    min="0.01"
+                    step="0.01"
+                    disabled={currency === "USD" && kesPerUsd === null}
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value)}
                     placeholder="e.g. 50000"
@@ -462,11 +404,9 @@ export default function Savings() {
                   />
                 </div>
               </div>
-
               {formError && depositId === null && (
                 <p className="mt-3 text-xs text-red-500">{formError}</p>
               )}
-
               {message && (
                 <p className="mt-3 text-xs text-green-600">{message}</p>
               )}
@@ -496,8 +436,6 @@ export default function Savings() {
               </div>
             </form>
           </section>
-
-          {/* Savings goals */}
           <section className={card}>
             <p className="text-sm font-semibold">Your savings goals</p>
             <p className="text-xs text-gray-500">
@@ -528,7 +466,6 @@ export default function Savings() {
 
                   const goalRemaining = Math.max(target - saved, 0);
                   const completed = progress >= 100;
-
                   return (
                     <li key={goal._id} className="py-4 first:pt-0 last:pb-0">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -537,25 +474,21 @@ export default function Savings() {
                             <span className="truncate text-sm font-medium">
                               {goal.name}
                             </span>
-
                             {completed && (
                               <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600">
                                 Completed
                               </span>
                             )}
                           </div>
-
                           <p className="mt-1 text-xs text-gray-500 sm:text-sm">
                             {formatMoney(saved)} of {formatMoney(target)}
                           </p>
-
                           <div className="mt-2 h-2 w-full rounded-full bg-neutral-200">
                             <div
                               className="h-2 rounded-full bg-indigo-500 transition-all"
                               style={{ width: `${progress}%` }}
                             />
                           </div>
-
                           <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-gray-500">
                             <span>{progress.toFixed(0)}% complete</span>
                             <span>
@@ -565,7 +498,6 @@ export default function Savings() {
                             </span>
                           </div>
                         </div>
-
                         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                           <button
                             type="button"
@@ -579,7 +511,6 @@ export default function Savings() {
                           >
                             Add money
                           </button>
-
                           <button
                             type="button"
                             onClick={() => handleEdit(goal)}
@@ -587,7 +518,6 @@ export default function Savings() {
                           >
                             Edit
                           </button>
-
                           <button
                             type="button"
                             onClick={() => handleDelete(goal._id)}
@@ -598,7 +528,6 @@ export default function Savings() {
                           </button>
                         </div>
                       </div>
-
                       {depositId === goal._id && (
                         <form
                           onSubmit={handleDeposit}
@@ -608,7 +537,7 @@ export default function Savings() {
                             htmlFor={`deposit-${goal._id}`}
                             className="mb-1.5 block text-xs font-medium text-gray-600"
                           >
-                            Deposit amount (KSH)
+                            Deposit amount ({currency})
                           </label>
 
                           <div className="flex flex-col gap-2 sm:flex-row">
@@ -617,6 +546,7 @@ export default function Savings() {
                               type="number"
                               min="0.01"
                               step="0.01"
+                              disabled={currency === "USD" && kesPerUsd === null}
                               value={depositAmount}
                               onChange={(e) =>
                                 setDepositAmount(e.target.value)
@@ -624,7 +554,6 @@ export default function Savings() {
                               placeholder="Enter amount"
                               className="w-full rounded-xl border border-neutral-200 bg-[#FAFAFA] px-3 py-2.5 text-sm outline-none focus:border-neutral-400 focus:bg-white sm:max-w-xs"
                             />
-
                             <button
                               type="submit"
                               disabled={busy}
@@ -632,7 +561,6 @@ export default function Savings() {
                             >
                               {busy ? "Adding..." : "Confirm deposit"}
                             </button>
-
                             <button
                               type="button"
                               onClick={() => {
@@ -645,7 +573,6 @@ export default function Savings() {
                               Cancel
                             </button>
                           </div>
-
                           {formError && (
                             <p className="mt-2 text-xs text-red-500">
                               {formError}

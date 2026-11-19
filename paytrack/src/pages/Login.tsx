@@ -17,11 +17,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.slice(1));
     const token = params.get("token");
-
     if (token) {
       localStorage.setItem("token", token);
       clearCache();
@@ -32,13 +30,11 @@ export default function Login() {
       );
       navigate("/dashboard", { replace: true });
     }
-
     const query = new URLSearchParams(window.location.search);
     if (query.get("error") === "google_auth_failed") {
       setError("Google login failed. Please try again.");
     }
   }, [navigate]);
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -47,9 +43,7 @@ export default function Login() {
       setError("Please enter your email and password.");
       return;
     }
-
     setLoading(true);
-
     try {
       const res = await fetch(`${API}/login`, {
         method: "POST",
@@ -58,9 +52,7 @@ export default function Login() {
         },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json().catch(() => null);
-
       if (!res.ok) {
         setError(
           data?.message ||
@@ -69,12 +61,10 @@ export default function Login() {
         );
         return;
       }
-
       if (!data?.token) {
         setError("Login succeeded but no authentication token was returned.");
         return;
       }
-
       localStorage.setItem("token", data.token);
       clearCache();
       navigate("/dashboard", { replace: true });
@@ -90,15 +80,12 @@ export default function Login() {
       setLoading(false);
     }
   };
-
   const handleGoogleLogin = () => {
     window.location.href = `${API}/auth/google`;
   };
-
   return (
     <div
       className="relative min-h-screen w-full overflow-hidden bg-[#F2F2F2] text-[#111827]"
-      
     >
       <header className="relative flex items-center gap-2 px-6 py-5 sm:px-10">
         <div className="flex h-9 w-9 items-center justify-center rounded bg-black/70 text-white">
@@ -106,7 +93,6 @@ export default function Login() {
         </div>
         <span className="text-sm font-semibold">paytrack</span>
       </header>
-
       <main className="relative  flex justify-center px-4 pb-10 pt-6 sm:pt-12">
         <div className="w-full max-w-md rounded border border-neutral-200 bg-white p-6  sm:p-8">
           <div className="text-center">
@@ -117,7 +103,6 @@ export default function Login() {
               Log in to your paytrack account
             </p>
           </div>
-
           <button
             type="button"
             onClick={handleGoogleLogin}
@@ -131,13 +116,11 @@ export default function Login() {
             </svg>
             Continue with Google
           </button>
-
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-neutral-200" />
             <span className="text-xs text-gray-400">or</span>
             <div className="h-px flex-1 bg-neutral-200" />
           </div>
-
           {error && (
             <div
               role="alert"
@@ -147,7 +130,6 @@ export default function Login() {
               <span>{error}</span>
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
             <div>
               <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-gray-600">
@@ -164,7 +146,6 @@ export default function Login() {
                 className={inputClass}
               />
             </div>
-
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label htmlFor="password" className="block text-xs font-medium text-gray-600">
@@ -178,7 +159,6 @@ export default function Login() {
                   Forgot password?
                 </button>
               </div>
-
               <div className="relative">
                 <input
                   required
@@ -200,7 +180,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -209,7 +188,6 @@ export default function Login() {
               {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
-
           <p className="mt-6 text-center text-sm text-gray-500">
             Don't have an account?{" "}
             <button

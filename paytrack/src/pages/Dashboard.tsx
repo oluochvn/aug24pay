@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { logout, useApi } from "../lib/useApi";
 import { useCurrency } from "../lib/useCurrency";
+import MobileNavigation from "../components/MobileNavigation";
 
 interface Transaction {
   _id: string;
@@ -52,11 +53,6 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
       : "text-gray-500 hover:bg-white/60"
   }`;
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-    isActive ? "bg-[#111827] text-white" : "bg-white text-gray-600"
-  }`;
-
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 
 function Dashboard() {
@@ -65,9 +61,13 @@ function Dashboard() {
     currency,
     setCurrency,
     kesPerUsd,
+    kesPerBtc,
     rateUpdatedAt,
+    btcRateUpdatedAt,
     rateLoading,
     rateError,
+    btcRateLoading,
+    btcRateError,
     formatMoney,
   } = useCurrency();
   const username = data?.user?.username || "";
@@ -126,20 +126,7 @@ function Dashboard() {
           <span className="text-sm font-semibold">paytrack</span>
         </div>
 
-        <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
-          {menu.map(({ label, to }) => (
-            <NavLink key={to} to={to} className={linkClass}>
-              {label}
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            onClick={logout}
-            className={linkClass({ isActive: false })}
-          >
-            Log out
-          </button>
-        </div>
+        <MobileNavigation items={menu} />
 
         {error && !data && (
           <div className={`mx-3 mt-6 text-sm text-gray-500 sm:mx-4 md:mx-8 md:mt-8 ${card}`}>
@@ -161,23 +148,45 @@ function Dashboard() {
                   id="summary-currency"
                   aria-label="Currency"
                   title={
-                    rateError
-                      ? `Exchange rate unavailable: ${rateError}`
-                      : rateLoading
-                        ? "Loading exchange rate"
-                        : `1 USD = ${kesPerUsd?.toLocaleString("en-KE")} KSH${
-                            rateUpdatedAt ? ` · Updated ${rateUpdatedAt}` : ""
-                          }`
+                    currency === "KSH"
+                      ? "KSH"
+                      : currency === "USD"
+                        ? rateError
+                          ? `Exchange rate unavailable: ${rateError}`
+                          : rateLoading
+                            ? "Loading exchange rate"
+                            : `1 USD = ${kesPerUsd?.toLocaleString("en-KE")} KSH${
+                                rateUpdatedAt ? ` · Updated ${rateUpdatedAt}` : ""
+                              }`
+                        : btcRateError
+                          ? `Bitcoin price unavailable: ${btcRateError}`
+                          : btcRateLoading
+                            ? "Loading Bitcoin price"
+                            : `1 BTC = ${kesPerBtc?.toLocaleString("en-KE")} KSH${
+                                btcRateUpdatedAt
+                                  ? ` · Updated ${btcRateUpdatedAt}`
+                                  : ""
+                              }`
                   }
                   value={currency}
-                  onChange={(event) =>
-                    setCurrency(event.target.value === "USD" ? "USD" : "KSH")
-                  }
+                  onChange={(event) => {
+                    const selected = event.target.value;
+                    setCurrency(
+                      selected === "USD"
+                        ? "USD"
+                        : selected === "BTC"
+                          ? "BTC"
+                          : "KSH"
+                    );
+                  }}
                   className="rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-sm"
                 >
                   <option value="KSH">KSH</option>
                   <option value="USD" disabled={kesPerUsd === null}>
                     USD
+                  </option>
+                  <option value="BTC" disabled={kesPerBtc === null}>
+                    BTC
                   </option>
                 </select>
               </div>

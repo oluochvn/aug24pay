@@ -15,6 +15,7 @@ import {
   formatCurrency,
 } from "../lib/currency-utils";
 import { useCurrency } from "../lib/useCurrency";
+import MobileNavigation from "../components/MobileNavigation";
 
 interface MonthData {
   label: string;
@@ -71,11 +72,6 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
       : "text-gray-500 hover:bg-white/60"
   }`;
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-    isActive ? "bg-[#111827] text-white" : "bg-white text-gray-600"
-  }`;
-
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 async function fetchTransactions(months: number): Promise<Transaction[]> {
   const token = localStorage.getItem("token");
@@ -115,7 +111,8 @@ async function downloadPdf(
   months: number,
   transactions: Transaction[],
   currency: Currency,
-  kesPerUsd: number | null
+  kesPerUsd: number | null,
+  kesPerBtc: number | null
 ) {
   const { jsPDF } = await import("jspdf");
 
@@ -137,7 +134,7 @@ async function downloadPdf(
   const expenses = report.expenses || 0;
   const categoryTotal = report.categories.reduce((s, c) => s + c.total, 0);
   const money = (amount: number) =>
-    formatCurrency(amount, currency, kesPerUsd);
+    formatCurrency(amount, currency, kesPerUsd, kesPerBtc);
   const signedMoney = (amount: number) =>
     `${amount < 0 ? "-" : ""}${money(Math.abs(amount))}`;
   doc.setFont("helvetica", "bold");
@@ -421,7 +418,7 @@ const smoothPath = (pts: { x: number; y: number }[]) => {
 
 function TrendChart({ months }: { months: MonthData[] }) {
   const [hover, setHover] = useState<number | null>(null);
-  const { currency, kesPerUsd, formatMoney } = useCurrency();
+  const { currency, kesPerUsd, kesPerBtc, formatMoney } = useCurrency();
   const n = months.length;
   if (n === 0) return null;
 
@@ -432,7 +429,11 @@ function TrendChart({ months }: { months: MonthData[] }) {
       ? kesPerUsd === null
         ? "--"
         : `$${compact(amount / kesPerUsd)}`
-      : compact(amount);
+      : currency === "BTC"
+        ? kesPerBtc === null
+          ? "--"
+          : `₿${compact(amount / kesPerBtc)}`
+        : compact(amount);
 
   const xPct = (i: number) => (n === 1 ? 50 : X_START + (i / (n - 1)) * X_SPAN);
   const yPct = (v: number) => 100 - (v / max) * 100;
@@ -594,7 +595,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
 }
 
 function Reports() {
-  const { currency, kesPerUsd, formatMoney } = useCurrency();
+  const { currency, kesPerUsd, kesPerBtc, formatMoney } = useCurrency();
   const [months, setMonths] = useState(3);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
@@ -622,7 +623,14 @@ function Reports() {
     setExporting(true);
     try {
       const transactions = await fetchTransactions(months);
-      await downloadPdf(report, months, transactions, currency, kesPerUsd);
+      await downloadPdf(
+        report,
+        months,
+        transactions,
+        currency,
+        kesPerUsd,
+        kesPerBtc
+      );
     } catch (err) {
       setExportError(
         err instanceof Error && err.message
@@ -691,20 +699,7 @@ function Reports() {
           <span className="text-sm font-semibold">paytrack</span>
         </div>
 
-        <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
-          {menu.map(({ label, to }) => (
-            <NavLink key={to} to={to} className={linkClass}>
-              {label}
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            onClick={logout}
-            className={linkClass({ isActive: false })}
-          >
-            Log out
-          </button>
-        </div>
+        <MobileNavigation items={menu} />
 
         
         <div className="mx-3 mt-6 flex flex-wrap items-end justify-between gap-3 sm:mx-4 md:mx-8">
@@ -736,7 +731,8 @@ function Reports() {
                 !report ||
                 loading ||
                 exporting ||
-                (currency === "USD" && kesPerUsd === null)
+                (currency === "USD" && kesPerUsd === null) ||
+                (currency === "BTC" && kesPerBtc === null)
               }
               className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-1.5 text-sm text-[#111827] transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
             >

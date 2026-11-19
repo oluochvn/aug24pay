@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useApi, invalidate, logout } from "../lib/useApi";
 import { useCurrency } from "../lib/useCurrency";
+import MobileNavigation from "../components/MobileNavigation";
 
 interface Goal {
   _id: string;
@@ -32,10 +33,6 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
     isActive
       ? "bg-white font-medium text-[#111827] shadow-sm"
       : "text-gray-500 hover:bg-white/60"
-  }`;
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-    isActive ? "bg-[#111827] text-white" : "bg-white text-gray-600"
   }`;
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 async function apiRequest<T>(
@@ -69,7 +66,14 @@ async function apiRequest<T>(
   return result as T;
 }
 export default function Savings() {
-  const { currency, kesPerUsd, formatMoney, toKsh, fromKsh } = useCurrency();
+  const {
+    currency,
+    kesPerUsd,
+    kesPerBtc,
+    formatMoney,
+    toKsh,
+    fromKsh,
+  } = useCurrency();
   const { data, loading, error, update } = useApi<Goal[]>("/goals");
   const { data: summary } = useApi<Summary>("/summary");
   const username = summary?.user?.username || "";
@@ -119,7 +123,7 @@ export default function Savings() {
     }
     const amount = toKsh(enteredAmount);
     if (amount === null) {
-      setFormError("The USD exchange rate is unavailable. Switch to KSH and try again.");
+      setFormError("The exchange rate is unavailable. Please try again later.");
       return;
     }
     if (amount < 1) {
@@ -148,9 +152,7 @@ export default function Savings() {
           name: name.trim(),
           targetAmount: amount,
         });
-
         update([...goals, newGoal]);
-
         setMessage("Savings goal created.");
       }
       resetForm();
@@ -168,9 +170,9 @@ export default function Savings() {
     setName(goal.name);
     const displayAmount = fromKsh(goal.targetAmount);
     setTargetAmount(
-      currency === "USD"
-        ? displayAmount?.toFixed(2) ?? ""
-        : String(goal.targetAmount)
+      currency === "KSH"
+        ? String(goal.targetAmount)
+        : displayAmount?.toFixed(currency === "BTC" ? 8 : 2) ?? ""
     );
     setFormError("");
     setMessage("");
@@ -186,8 +188,8 @@ export default function Savings() {
       return;
     }
     const amount = toKsh(enteredAmount);
-    if (amount === null) {
-      setFormError("The USD exchange rate is unavailable. Switch to KSH and try again.");
+    if (amount === null || amount <= 0) {
+      setFormError("The exchange rate is unavailable or the amount is too small.");
       return;
     }
     const selectedGoal = goals.find((goal) => goal._id === depositId);
@@ -293,20 +295,7 @@ export default function Savings() {
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </div>
-        <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
-          {menu.map(({ label, to }) => (
-            <NavLink key={to} to={to} className={linkClass}>
-              {label}
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            onClick={logout}
-            className={linkClass({ isActive: false })}
-          >
-            Log out
-          </button>
-        </div>
+        <MobileNavigation items={menu} />
         <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
           <h1 className="text-2xl font-semibold">Savings</h1>
           <p className="text-sm text-gray-500">
@@ -394,9 +383,12 @@ export default function Savings() {
                   <input
                     id="targetAmount"
                     type="number"
-                    min="0.01"
-                    step="0.01"
-                    disabled={currency === "USD" && kesPerUsd === null}
+                    min={currency === "BTC" ? "0.00000001" : "0.01"}
+                    step={currency === "BTC" ? "0.00000001" : "0.01"}
+                    disabled={
+                      (currency === "USD" && kesPerUsd === null) ||
+                      (currency === "BTC" && kesPerBtc === null)
+                    }
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value)}
                     placeholder="e.g. 50000"
@@ -544,9 +536,12 @@ export default function Savings() {
                             <input
                               id={`deposit-${goal._id}`}
                               type="number"
-                              min="0.01"
-                              step="0.01"
-                              disabled={currency === "USD" && kesPerUsd === null}
+                              min={currency === "BTC" ? "0.00000001" : "0.01"}
+                              step={currency === "BTC" ? "0.00000001" : "0.01"}
+                              disabled={
+                                (currency === "USD" && kesPerUsd === null) ||
+                                (currency === "BTC" && kesPerBtc === null)
+                              }
                               value={depositAmount}
                               onChange={(e) =>
                                 setDepositAmount(e.target.value)

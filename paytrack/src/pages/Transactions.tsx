@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useApi, invalidate, logout } from "../lib/useApi";
 import { useCurrency } from "../lib/useCurrency";
+import MobileNavigation from "../components/MobileNavigation";
 
 const API = "/api";
 const TX = "/transactions";
@@ -100,13 +101,6 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
       : "text-gray-500 hover:bg-white/60"
   }`;
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
-    isActive
-      ? "bg-[#111827] text-white"
-      : "bg-white text-gray-600"
-  }`;
-
 const card =
   "rounded-2xl border border-neutral-200 bg-white p-4";
 
@@ -147,7 +141,14 @@ const refreshCaches = () => {
 
 function Transactions() {
   const navigate = useNavigate();
-  const { currency, kesPerUsd, formatMoney, toKsh, fromKsh } = useCurrency();
+  const {
+    currency,
+    kesPerUsd,
+    kesPerBtc,
+    formatMoney,
+    toKsh,
+    fromKsh,
+  } = useCurrency();
 
   // Shared cache with the other pages, so the sidebar name needs no extra request.
   const { data: summary } = useApi<{ user?: { username?: string } }>(
@@ -217,8 +218,8 @@ function Transactions() {
     }
 
     const amount = toKsh(enteredAmount);
-    if (amount === null) {
-      setError("The USD exchange rate is unavailable. Switch to KSH and try again.");
+    if (amount === null || amount <= 0) {
+      setError("The exchange rate is unavailable or the amount is too small.");
       return;
     }
 
@@ -262,9 +263,9 @@ function Transactions() {
     setForm({
       type: t.type,
       amount:
-        currency === "USD"
-          ? displayAmount?.toFixed(2) ?? ""
-          : String(t.amount),
+        currency === "KSH"
+          ? String(t.amount)
+          : displayAmount?.toFixed(currency === "BTC" ? 8 : 2) ?? "",
       category: t.category,
       note: t.note || "",
       date: t.date.slice(0, 10),
@@ -360,20 +361,7 @@ function Transactions() {
         </div>
 
         {/* Mobile navigation */}
-        <div className="mx-3 mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:mx-4 lg:hidden">
-          {menu.map(({ label, to }) => (
-            <NavLink key={to} to={to} className={linkClass}>
-              {label}
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            onClick={logout}
-            className={linkClass({ isActive: false })}
-          >
-            Log out
-          </button>
-        </div>
+        <MobileNavigation items={menu} />
 
         {/* Heading */}
         <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
@@ -461,11 +449,14 @@ function Transactions() {
 
               <input
                 type="number"
-                min="0.01"
-                step="any"
-                disabled={currency === "USD" && kesPerUsd === null}
+                min={currency === "BTC" ? "0.00000001" : "0.01"}
+                step={currency === "BTC" ? "0.00000001" : "any"}
+                disabled={
+                  (currency === "USD" && kesPerUsd === null) ||
+                  (currency === "BTC" && kesPerBtc === null)
+                }
                 required
-                placeholder="0.00"
+                placeholder={currency === "BTC" ? "0.00000000" : "0.00"}
                 value={form.amount}
                 onChange={(e) => update("amount", e.target.value)}
                 className={inputClass}

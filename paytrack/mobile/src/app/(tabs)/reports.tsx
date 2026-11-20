@@ -94,10 +94,10 @@ export default function ReportsScreen() {
 
 const styles = StyleSheet.create({
   ranges: { flexDirection: "row", gap: 8, marginBottom: 2 },
-  range: { flex: 1, alignItems: "center", backgroundColor: "#fff", borderColor: colors.border, borderWidth: 1, borderRadius: 22, paddingVertical: 10 },
-  activeRange: { backgroundColor: colors.text, borderColor: colors.text },
+  range: { flex: 1, alignItems: "center", backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 22, paddingVertical: 10 },
+  activeRange: { backgroundColor: colors.accentLight, borderColor: colors.accent },
   rangeText: { color: colors.muted, fontSize: 13, fontWeight: "600" },
-  activeRangeText: { color: "#fff" },
+  activeRangeText: { color: colors.accent },
   metrics: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   metric: { width: "48%", flexGrow: 1, padding: 13 },
   label: { color: colors.muted, fontSize: 12 },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   month: { marginTop: 18 },
   monthHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   monthLabel: { color: colors.text, fontSize: 13, fontWeight: "600" },
-  barTrack: { height: 7, borderRadius: 10, backgroundColor: "#f0f0f0", overflow: "hidden", marginTop: 7 },
+  barTrack: { height: 7, borderRadius: 10, backgroundColor: colors.border, overflow: "hidden", marginTop: 7 },
   incomeBar: { height: "100%", backgroundColor: colors.positive, borderRadius: 10 },
   expenseBar: { height: "100%", backgroundColor: colors.negative, borderRadius: 10 },
   categoryBar: { height: "100%", backgroundColor: colors.accent, borderRadius: 10 },

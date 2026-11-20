@@ -165,11 +165,11 @@ export default function SavingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  overview: { backgroundColor: colors.text, borderColor: colors.text },
+  overview: { backgroundColor: colors.surface, borderColor: colors.border },
   overviewLabel: { color: "#d4d4d8", fontSize: 13 },
   overviewAmount: { color: "#fff", fontSize: 26, fontWeight: "700", marginVertical: 8 },
   sectionTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
-  track: { height: 8, borderRadius: 20, backgroundColor: "#e5e5e5", overflow: "hidden", marginVertical: 12 },
+  track: { height: 8, borderRadius: 20, backgroundColor: colors.border, overflow: "hidden", marginVertical: 12 },
   progress: { height: "100%", backgroundColor: colors.accent, borderRadius: 20 },
   goalName: { color: colors.text, fontSize: 16, fontWeight: "700" },
   goalDetails: { color: colors.muted, fontSize: 12 },

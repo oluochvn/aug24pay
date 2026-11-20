@@ -7,7 +7,7 @@ import { clearCache } from "../lib/useApi";
 const API = "/api";
 
 const inputClass =
-  "w-full rounded border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100";
+  "w-full rounded border border-neutral-200 bg-[#FAFAFA] px-3.5 py-3 text-sm text-[#111827] outline-none transition placeholder:text-gray-400 focus:border-[#4ade80] focus:bg-white focus:ring-4 focus:ring-[#4ade80]/20";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -109,10 +109,10 @@ export default function Login() {
             className="mt-6 flex w-full items-center justify-center gap-2.5 rounded border border-neutral-200 bg-white py-3 text-sm font-medium text-[#111827] transition-colors hover:bg-neutral-50"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.56-5.17 3.56-8.82z" />
-              <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1C3.24 21.3 7.26 24 12 24z" />
-              <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28v-3.1H1.26A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.26 5.38l4.01-3.1z" />
-              <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.6 4.59 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.26 0 3.24 2.7 1.26 6.62l4.01 3.1c.95-2.85 3.6-4.96 6.73-4.96z" />
+              <path fill="#a3a3a7" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.56-5.17 3.56-8.82z" />
+              <path fill="#a3a3a7" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1C3.24 21.3 7.26 24 12 24z" />
+              <path fill="#a3a3a7" d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28v-3.1H1.26A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.26 5.38l4.01-3.1z" />
+              <path fill="#a3a3a7" d="M12 4.77c1.76 0 3.34.6 4.59 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.26 0 3.24 2.7 1.26 6.62l4.01 3.1c.95-2.85 3.6-4.96 6.73-4.96z" />
             </svg>
             Continue with Google
           </button>
@@ -124,7 +124,7 @@ export default function Login() {
           {error && (
             <div
               role="alert"
-              className="mt-5 flex items-start gap-2 rounded border border-red-100 bg-red-50 px-3.5 py-3 text-sm text-red-600"
+              className="mt-5 flex items-start gap-2 rounded border border-neutral-200 bg-neutral-100 px-3.5 py-3 text-sm text-gray-400"
             >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
@@ -154,7 +154,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => navigate("/forgot-password")}
-                  className="text-xs text-indigo-600 hover:underline"
+                  className="text-xs text-[#4ade80] hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -183,7 +183,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded bg-[#111827] py-3 text-sm font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded bg-[#4ade80] py-3 text-sm font-medium text-[#09090a] transition-colors hover:bg-[#4ade80] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Logging in..." : "Log in"}
             </button>

@@ -1,26 +1,13 @@
 import { router } from "expo-router";
-import { Alert, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { RefreshControl, StyleSheet, Text, View } from "react-native";
 import { Button, Card, Notice, Page } from "../../components/ui";
 import { useApiResource } from "../../hooks/useApiResource";
-import { useSession } from "../../session";
 import { colors, formatDate, formatMoney } from "../../theme";
 import type { Summary } from "../../types";
 
 export default function DashboardScreen() {
   const { data, loading, error, refresh } = useApiResource<Summary>("/summary");
-  const { signOut } = useSession();
   const username = data?.user?.username || "there";
-
-  const logout = async () => {
-    try {
-      await signOut();
-    } catch (reason) {
-      Alert.alert(
-        "Could not log out",
-        reason instanceof Error ? reason.message : "Try again.",
-      );
-    }
-  };
 
   return (
     <Page
@@ -46,7 +33,6 @@ export default function DashboardScreen() {
 
       <View style={styles.quickActions}>
         <Button title="Add transaction" onPress={() => router.push("/(tabs)/transactions")} />
-        <Button title="Savings goals" secondary onPress={() => router.push("/(tabs)/savings")} />
       </View>
 
       <Card>
@@ -98,13 +84,12 @@ export default function DashboardScreen() {
           <Text style={styles.empty}>{loading ? "Loading goals..." : "No savings goals yet."}</Text>
         )}
       </Card>
-      <Button title="Log out" secondary onPress={logout} />
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  balanceCard: { backgroundColor: colors.text, borderColor: colors.text, padding: 21 },
+  balanceCard: { backgroundColor: colors.surface, borderColor: colors.border, padding: 21 },
   balanceLabel: { color: "#d4d4d8", fontSize: 13 },
   balance: { color: "#fff", fontSize: 29, fontWeight: "700", marginTop: 6 },
   summaryRow: { flexDirection: "row", marginTop: 24, gap: 30 },

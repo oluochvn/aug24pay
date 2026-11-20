@@ -104,7 +104,7 @@ function Dashboard() {
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-medium text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1c1c1d] text-xs font-medium text-white"
             >
               {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
@@ -120,7 +120,7 @@ function Dashboard() {
 
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1c1c1d] text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
@@ -226,7 +226,7 @@ function Dashboard() {
                   </div>
                   <NavLink
                     to="/transactions"
-                    className="text-sm font-medium text-indigo-600 hover:underline"
+                    className="text-sm font-medium text-gray-500 hover:text-gray-200 hover:underline"
                   >
                     View all
                   </NavLink>
@@ -239,7 +239,7 @@ function Dashboard() {
                     </p>
                     <NavLink
                       to="/transactions"
-                      className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
+                      className="mt-2 inline-block text-sm font-medium text-gray-500 hover:text-gray-200 hover:underline"
                     >
                       Add your first transaction
                     </NavLink>
@@ -264,8 +264,8 @@ function Dashboard() {
                           <p
                             className={`text-sm font-semibold ${
                               t.type === "income"
-                                ? "text-green-600"
-                                : "text-[#ff4d52]"
+                                ? "text-[#4ade80]"
+                                : "text-gray-400"
                             }`}
                           >
                             {t.type === "income" ? "+" : "-"}
@@ -291,7 +291,7 @@ function Dashboard() {
                   </div>
                   <NavLink
                     to="/savings"
-                    className="text-sm font-medium text-indigo-600 hover:underline"
+                    className="text-sm font-medium text-gray-500 hover:text-gray-200 hover:underline"
                   >
                     View goals
                   </NavLink>
@@ -304,7 +304,7 @@ function Dashboard() {
                     </p>
                     <NavLink
                       to="/savings"
-                      className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
+                      className="mt-2 inline-block text-sm font-medium text-gray-500 hover:text-gray-200 hover:underline"
                     >
                       Create a goal
                     </NavLink>
@@ -333,7 +333,7 @@ function Dashboard() {
                           </div>
                           <div className="mt-2 h-1 w-full bg-neutral-200">
                             <div
-                              className="h-1 bg-indigo-500"
+                              className="h-1 bg-[#4ade80]"
                               style={{ width: `${pct}%` }}
                             />
                           </div>

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { SessionProvider, useSession } from "../session";
+import { Loading } from "../components/ui";
 
 function Navigation() {
   const { token, ready } = useSession();
@@ -16,9 +17,11 @@ function Navigation() {
     if (token && inAuth) router.replace("/(tabs)");
   }, [inAuth, ready, router, token]);
 
+  if (!ready) return <Loading />;
+
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false }} />
     </>
   );

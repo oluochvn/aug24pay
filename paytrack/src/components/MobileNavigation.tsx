@@ -42,7 +42,7 @@ export default function MobileNavigation({
               className={({ isActive }) =>
                 `rounded-lg px-3 py-2.5 text-sm ${
                   isActive
-                    ? "bg-[#111827] font-medium text-white"
+                    ? "bg-[#4ade80] font-medium text-[#09090a]"
                     : "text-gray-600 hover:bg-neutral-50"
                 }`
               }

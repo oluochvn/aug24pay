@@ -3,6 +3,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Landing from "./pages/landing";
 import Transactions from "./pages/Transactions";
 import Savings from "./pages/Saving";
 import Reports from "./pages/Report";
@@ -11,7 +12,8 @@ export default function App() {
   return (
     <CurrencyProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/landing" replace />} />
+        <Route path="/landing" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />

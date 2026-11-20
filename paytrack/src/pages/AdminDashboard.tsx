@@ -207,7 +207,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               onClick={() => navigate("/login", { replace: true })}
-              className="mt-4 rounded-lg bg-[#111827] px-4 py-2 text-sm font-medium text-white"
+              className="mt-4 rounded-lg bg-[#4ade80] px-4 py-2 text-sm font-medium text-[#09090a]"
             >
               Return to login
             </button>
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
         {error && (
           <p
             role="alert"
-            className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="mt-5 rounded-lg border border-neutral-200 bg-neutral-100 px-4 py-3 text-sm text-gray-400"
           >
             {error}
           </p>
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
         {notice && (
           <p
             role="status"
-            className="mt-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
+            className="mt-5 rounded-lg border border-[#285338] bg-[#14251b] px-4 py-3 text-sm text-[#4ade80]"
           >
             {notice}
           </p>
@@ -320,8 +320,8 @@ export default function AdminDashboard() {
                           <span
                             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                               user.status === "approved"
-                                ? "bg-green-50 text-green-700"
-                                : "bg-amber-50 text-amber-700"
+                                ? "bg-[#14251b] text-[#4ade80]"
+                                : "bg-neutral-100 text-gray-500"
                             }`}
                           >
                             {user.status}
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 disabled={busyUserId === user.id}
                                 onClick={() => void runUserAction(user, "approve")}
-                                className="flex items-center gap-1 rounded-lg bg-green-600 px-2.5 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                                className="flex items-center gap-1 rounded-lg bg-[#4ade80] px-2.5 py-2 text-xs font-medium text-[#09090a] hover:bg-[#4ade80] disabled:opacity-50"
                               >
                                 <Check size={14} />
                                 Approve
@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                                   ? "You cannot delete your own account here."
                                   : "Delete user"
                               }
-                              className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                              className="rounded-lg border border-neutral-200 p-2 text-gray-400 hover:bg-neutral-100 disabled:opacity-50"
                             >
                               <Trash2 size={15} />
                             </button>
@@ -391,7 +391,7 @@ export default function AdminDashboard() {
                   onChange={(event) =>
                     setForm({ ...form, username: event.target.value })
                   }
-                  className="mt-1.5 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1.5 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none focus:border-[#4ade80] focus:ring-2 focus:ring-[#4ade80]/20"
                 />
               </label>
               <label className="block text-sm font-medium">
@@ -404,7 +404,7 @@ export default function AdminDashboard() {
                   onChange={(event) =>
                     setForm({ ...form, email: event.target.value })
                   }
-                  className="mt-1.5 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1.5 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none focus:border-[#4ade80] focus:ring-2 focus:ring-[#4ade80]/20"
                 />
               </label>
               <label className="block text-sm font-medium">
@@ -418,13 +418,13 @@ export default function AdminDashboard() {
                   onChange={(event) =>
                     setForm({ ...form, password: event.target.value })
                   }
-                  className="mt-1.5 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                  className="mt-1.5 w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm outline-none focus:border-[#4ade80] focus:ring-2 focus:ring-[#4ade80]/20"
                 />
               </label>
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full rounded-lg bg-[#111827] px-4 py-3 text-sm font-medium text-white hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-lg bg-[#4ade80] px-4 py-3 text-sm font-medium text-[#09090a] hover:bg-[#4ade80] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving ? "Creating..." : "Create approved user"}
               </button>

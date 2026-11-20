@@ -502,8 +502,8 @@ function TrendChart({ months }: { months: MonthData[] }) {
           >
             <defs>
               <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6d78d5" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#6d78d5" stopOpacity="0" />
+                <stop offset="0%" stopColor="#4ade80" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#4ade80" stopOpacity="0" />
               </linearGradient>
             </defs>
 
@@ -525,7 +525,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
               <path
                 d={incPath}
                 fill="none"
-                stroke="#6d78d5"
+                stroke="#4ade80"
                 strokeWidth={2.5}
                 strokeLinecap="butt"
                 strokeLinejoin="miter"
@@ -536,7 +536,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
 
           
           <div
-            className="pointer-events-none absolute inset-y-0 border-l border-dashed border-[#7180ff]"
+            className="pointer-events-none absolute inset-y-0 border-l border-dashed border-[#4ade80]"
             style={{ left: activeLeft }}
           />
 
@@ -546,7 +546,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
             style={{ left: activeLeft, top: `${yPct(am.expenses)}%` }}
           />
           <span
-            className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#6d78d5] shadow"
+            className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#4ade80] shadow"
             style={{ left: activeLeft, top: `${yPct(am.income)}%` }}
           />
 
@@ -562,7 +562,7 @@ function TrendChart({ months }: { months: MonthData[] }) {
               {am.label} {am.year}
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
-              <span className="h-2 w-2 rounded-full bg-[#6d78d5]" />
+              <span className="h-2 w-2 rounded-full bg-[#4ade80]" />
               Income: {formatMoney(am.income)}
             </p>
             <p className="mt-0.5 flex items-center gap-1.5 text-xs text-gray-600">
@@ -675,7 +675,7 @@ function Reports() {
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-medium text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1c1c1d] text-xs font-medium text-white"
             >
               {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
@@ -693,7 +693,7 @@ function Reports() {
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
         
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1c1c1d] text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
@@ -742,7 +742,7 @@ function Reports() {
           </div>
         </div>
         {exportError && (
-          <p className="mx-3 mt-3 text-xs text-red-500 sm:mx-4 md:mx-8">
+          <p className="mx-3 mt-3 text-xs text-gray-400 sm:mx-4 md:mx-8">
             {exportError}
           </p>
         )}
@@ -812,7 +812,7 @@ function Reports() {
                         </div>
                         <div className="h-2 w-full rounded-full bg-neutral-200">
                           <div
-                            className="h-2 rounded-full bg-indigo-500"
+                            className="h-2 rounded-full bg-[#4ade80]"
                             style={{ width: `${pct}%` }}
                           />
                         </div>

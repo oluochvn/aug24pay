@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, Wallet } from "lucide-react";
 
 const inputClass =
-  "w-full border border-[#292a2d] bg-[#1c1c1d] px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-[#6b6f76] focus:border-[#7180ff] focus:ring-2 focus:ring-[#7180ff]/20";
+  "w-full border border-[#292a2d] bg-[#1c1c1d] px-3.5 py-3 text-sm text-white outline-none transition placeholder:text-[#6b6f76] focus:border-[#4ade80] focus:ring-2 focus:ring-[#4ade80]/20";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#e2e3e5]";
 export default function Register() {
@@ -65,7 +65,7 @@ export default function Register() {
       style={{ colorScheme: "dark" }}
     >
       <header className="flex items-center gap-2 px-6 py-5 sm:px-10">
-        <div className="flex h-9 w-9 items-center justify-center bg-[#6d78d5] text-white">
+        <div className="flex h-9 w-9 items-center justify-center bg-[#1c1c1d] text-white">
           <Wallet size={18} />
         </div>
         <span className="text-sm font-semibold">paytrack</span>
@@ -86,19 +86,19 @@ export default function Register() {
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
               <path
-                fill="#4285F4"
+                fill="#a3a3a7"
                 d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.48c-.28 1.5-1.13 2.78-2.4 3.63v3h3.88c2.27-2.09 3.56-5.17 3.56-8.82z"
               />
               <path
-                fill="#34A853"
+                fill="#a3a3a7"
                 d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.26v3.1C3.24 21.3 7.26 24 12 24z"
               />
               <path
-                fill="#FBBC05"
+                fill="#a3a3a7"
                 d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28v-3.1H1.26A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.26 5.38l4.01-3.1z"
               />
               <path
-                fill="#EA4335"
+                fill="#a3a3a7"
                 d="M12 4.77c1.76 0 3.34.6 4.59 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.26 0 3.24 2.7 1.26 6.62l4.01 3.1c.95-2.85 3.6-4.96 6.73-4.96z"
               />
             </svg>
@@ -112,7 +112,7 @@ export default function Register() {
           {error && (
             <div
               role="alert"
-              className="mt-5 flex items-start gap-2 border border-red-900 bg-red-950/30 px-3.5 py-3 text-sm text-red-300"
+              className="mt-5 flex items-start gap-2 border border-neutral-200 bg-neutral-100 px-3.5 py-3 text-sm text-gray-400"
             >
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
@@ -216,7 +216,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#6d78d5] py-3 text-sm font-medium text-white transition-colors hover:bg-[#6c78e6] disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full bg-[#4ade80] py-3 text-sm font-medium text-[#09090a] transition-colors hover:bg-[#4ade80] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Sign up"}
             </button>
@@ -226,7 +226,7 @@ export default function Register() {
             <button
               type="button"
               onClick={() => navigate("/login")}
-              className="font-medium text-[#7180ff] hover:text-white hover:underline"
+              className="font-medium text-gray-500 hover:text-white hover:underline"
             >
               Log in
             </button>

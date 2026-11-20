@@ -81,13 +81,13 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 54 },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 9 },
-  brandMark: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.text, alignItems: "center", justifyContent: "center" },
+  brandMark: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" },
   brandGlyph: { color: "#fff", fontSize: 18, fontWeight: "700" },
   brand: { color: colors.text, fontSize: 16, fontWeight: "700" },
   content: { width: "100%", maxWidth: 440, alignSelf: "center", marginTop: 34 },
   title: { color: colors.text, fontSize: 27, fontWeight: "700", textAlign: "center" },
   subtitle: { color: colors.muted, fontSize: 14, textAlign: "center", marginTop: 7 },
-  form: { backgroundColor: "#fff", borderColor: colors.border, borderWidth: 1, borderRadius: 20, padding: 20, marginTop: 24 },
+  form: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 20, padding: 20, marginTop: 24 },
   linkText: { color: colors.accent, fontWeight: "600" },
   footer: { color: colors.muted, textAlign: "center", marginTop: 22, fontSize: 14 },
 });

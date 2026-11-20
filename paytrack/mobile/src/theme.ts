@@ -1,13 +1,13 @@
 export const colors = {
-  background: "#f4f4f5",
-  surface: "#ffffff",
-  text: "#171717",
-  muted: "#737373",
-  border: "#e5e5e5",
-  accent: "#6d78d5",
-  accentLight: "#eef0ff",
-  positive: "#16834a",
-  negative: "#d94b51",
+  background: "#09090a",
+  surface: "#121213",
+  text: "#f5f5f5",
+  muted: "#a3a3a7",
+  border: "#292a2d",
+  accent: "#4ade80",
+  accentLight: "#14251b",
+  positive: "#4ade80",
+  negative: "#a3a3a7",
 };
 
 export const formatMoney = (amount: number | undefined) =>

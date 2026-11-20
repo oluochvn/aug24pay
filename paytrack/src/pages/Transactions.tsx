@@ -105,7 +105,7 @@ const card =
   "rounded-2xl border border-neutral-200 bg-white p-4";
 
 const inputClass =
-  "w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-400";
+  "w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-gray-400 focus:border-[#4ade80]";
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
@@ -334,7 +334,7 @@ function Transactions() {
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-medium text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1c1c1d] text-xs font-medium text-white"
             >
               {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
@@ -354,7 +354,7 @@ function Transactions() {
 
         {/* Mobile brand */}
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1c1c1d] text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
@@ -517,14 +517,14 @@ function Transactions() {
           </div>
 
           {error && (
-            <p className="mt-3 text-sm text-[#ff4d52]">{error}</p>
+            <p className="mt-3 text-sm text-gray-400">{error}</p>
           )}
 
           <div className="mt-5 flex items-center gap-2">
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 rounded-full bg-[#111827] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-600 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-full bg-[#4ade80] px-5 py-2.5 text-sm font-medium text-[#09090a] transition-colors hover:bg-[#4ade80] disabled:opacity-50"
             >
               <Plus size={15} />
               {saving
@@ -595,8 +595,8 @@ function Transactions() {
                   <div
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                       t.type === "income"
-                        ? "bg-green-50 text-green-600"
-                        : "bg-red-50 text-red-500"
+                        ? "bg-[#14251b] text-[#4ade80]"
+                        : "bg-neutral-100 text-gray-500"
                     }`}
                   >
                     <ArrowLeftRight size={18} />
@@ -618,7 +618,7 @@ function Transactions() {
                     className={`text-sm font-semibold ${
                       t.type === "income"
                         ? "text-black"
-                        : "text-[#ff4d52]"
+                        : "text-gray-500"
                     }`}
                   >
                     {t.type === "income" ? "+" : "-"}
@@ -630,7 +630,7 @@ function Transactions() {
                       type="button"
                       onClick={() => startEdit(t)}
                       aria-label="Edit transaction"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-neutral-50 hover:text-[#4ade80]"
                     >
                       <Pencil size={15} />
                     </button>
@@ -639,7 +639,7 @@ function Transactions() {
                       type="button"
                       onClick={() => remove(t._id)}
                       aria-label="Delete transaction"
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-neutral-50 hover:text-gray-200"
                     >
                       <Trash2 size={15} />
                     </button>

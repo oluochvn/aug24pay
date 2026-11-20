@@ -275,7 +275,7 @@ export default function Savings() {
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-medium text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1c1c1d] text-xs font-medium text-white"
             >
               {username ? username.charAt(0).toUpperCase() : "U"}
             </div>
@@ -290,7 +290,7 @@ export default function Savings() {
       </aside>
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1c1c1d] text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
@@ -337,7 +337,7 @@ export default function Savings() {
             </div>
             <div className="mt-3 h-2 w-full rounded-full bg-neutral-200">
               <div
-                className="h-2 rounded-full bg-indigo-500 transition-all"
+                className="h-2 rounded-full bg-[#4ade80] transition-all"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
@@ -397,17 +397,17 @@ export default function Savings() {
                 </div>
               </div>
               {formError && depositId === null && (
-                <p className="mt-3 text-xs text-red-500">{formError}</p>
+                <p className="mt-3 text-xs text-gray-400">{formError}</p>
               )}
               {message && (
-                <p className="mt-3 text-xs text-green-600">{message}</p>
+                <p className="mt-3 text-xs text-[#4ade80]">{message}</p>
               )}
 
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   type="submit"
                   disabled={busy}
-                  className="rounded-xl bg-[#111827] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-xl bg-[#4ade80] px-5 py-2.5 text-sm font-medium text-[#09090a] transition hover:bg-[#4ade80] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {busy
                     ? "Please wait..."
@@ -467,7 +467,7 @@ export default function Savings() {
                               {goal.name}
                             </span>
                             {completed && (
-                              <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600">
+                              <span className="rounded-full bg-[#14251b] px-2 py-0.5 text-[10px] font-medium text-[#4ade80]">
                                 Completed
                               </span>
                             )}
@@ -477,7 +477,7 @@ export default function Savings() {
                           </p>
                           <div className="mt-2 h-2 w-full rounded-full bg-neutral-200">
                             <div
-                              className="h-2 rounded-full bg-indigo-500 transition-all"
+                              className="h-2 rounded-full bg-[#4ade80] transition-all"
                               style={{ width: `${progress}%` }}
                             />
                           </div>
@@ -499,7 +499,7 @@ export default function Savings() {
                               setFormError("");
                               setMessage("");
                             }}
-                            className="rounded-lg bg-[#111827] px-3 py-2 text-xs font-medium text-white transition hover:bg-black"
+                            className="rounded-lg bg-[#4ade80] px-3 py-2 text-xs font-medium text-[#09090a] transition hover:bg-[#4ade80]"
                           >
                             Add money
                           </button>
@@ -514,7 +514,7 @@ export default function Savings() {
                             type="button"
                             onClick={() => handleDelete(goal._id)}
                             disabled={busy}
-                            className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                            className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-gray-500 transition hover:bg-neutral-50 hover:text-gray-200 disabled:opacity-50"
                           >
                             Delete
                           </button>
@@ -552,7 +552,7 @@ export default function Savings() {
                             <button
                               type="submit"
                               disabled={busy}
-                              className="rounded-xl bg-[#111827] px-4 py-2.5 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
+                              className="rounded-xl bg-[#4ade80] px-4 py-2.5 text-sm font-medium text-[#09090a] hover:bg-[#4ade80] disabled:opacity-50"
                             >
                               {busy ? "Adding..." : "Confirm deposit"}
                             </button>
@@ -569,7 +569,7 @@ export default function Savings() {
                             </button>
                           </div>
                           {formError && (
-                            <p className="mt-2 text-xs text-red-500">
+                            <p className="mt-2 text-xs text-gray-400">
                               {formError}
                             </p>
                           )}

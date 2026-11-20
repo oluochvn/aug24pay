@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   modalTitle: { color: colors.text, fontSize: 21, fontWeight: "700" },
   close: { color: colors.accent, fontSize: 14, fontWeight: "600" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
-  chip: { backgroundColor: "#fff", borderColor: colors.border, borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 9 },
+  chip: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 9 },
   selectedChip: { backgroundColor: colors.accentLight, borderColor: colors.accent },
   chipText: { color: colors.muted, fontSize: 13 },
   selectedChipText: { color: colors.accent, fontWeight: "600" },

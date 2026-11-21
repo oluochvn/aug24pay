@@ -85,7 +85,7 @@ export default function Login() {
   };
   return (
     <div
-      className="relative min-h-screen w-full overflow-hidden bg-[#F2F2F2] text-[#111827]"
+      className="auth-login relative min-h-screen w-full overflow-hidden bg-[#F2F2F2] text-[#111827]"
     >
       <header className="relative flex items-center gap-2 px-6 py-5 sm:px-10">
         <div className="flex h-9 w-9 items-center justify-center rounded bg-black/70 text-white">

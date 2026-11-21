@@ -198,7 +198,7 @@ export default function AdminDashboard() {
   if (authorized === false) return <Navigate to="/dashboard" replace />;
   if (authorized === null) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F2F2F2] px-4 text-[#111827]">
+      <main className="admin-dashboard flex min-h-screen items-center justify-center bg-[#F2F2F2] px-4 text-[#111827]">
         <div className="max-w-md rounded-xl border border-neutral-200 bg-white p-6 text-center">
           <p role={error ? "alert" : "status"} className="text-sm text-gray-600">
             {error || "Verifying admin access..."}
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
   const pendingCount = users.filter((user) => user.status === "pending").length;
 
   return (
-    <main className="min-h-screen bg-[#F2F2F2] px-4 py-6 text-[#111827] sm:px-8">
+    <main className="admin-dashboard min-h-screen bg-[#F2F2F2] px-4 py-6 text-[#111827] sm:px-8">
       <div className="mx-auto max-w-6xl">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">

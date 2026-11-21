@@ -1,4 +1,6 @@
+import { useLayoutEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Moon, Sun } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Login from "./pages/Login";
@@ -8,7 +10,25 @@ import Transactions from "./pages/Transactions";
 import Savings from "./pages/Saving";
 import Reports from "./pages/Report";
 import { CurrencyProvider } from "./lib/currency";
+
+type Theme = "light" | "dark";
+
+function getInitialTheme(): Theme {
+  const savedTheme = window.localStorage.getItem("paytrack-theme");
+  if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
 export default function App() {
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("paytrack-theme", theme);
+  }, [theme]);
+
   return (
     <CurrencyProvider>
       <Routes>
@@ -23,6 +43,18 @@ export default function App() {
         <Route path="/reports" element={<Reports />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+      <button
+        type="button"
+        className="theme-toggle"
+        aria-pressed={theme === "dark"}
+        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        onClick={() =>
+          setTheme((current) => (current === "dark" ? "light" : "dark"))
+        }
+      >
+        {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+      </button>
     </CurrencyProvider>
   );
 }

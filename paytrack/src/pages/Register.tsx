@@ -61,8 +61,7 @@ export default function Register() {
   };
   return (
     <div
-      className="min-h-screen w-full bg-[#09090A] text-white"
-      style={{ colorScheme: "dark" }}
+      className="auth-register min-h-screen w-full bg-[#09090A] text-white"
     >
       <header className="flex items-center gap-2 px-6 py-5 sm:px-10">
         <div className="flex h-9 w-9 items-center justify-center bg-[#1c1c1d] text-white">

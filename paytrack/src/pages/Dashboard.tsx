@@ -6,6 +6,8 @@ import {
   ArrowLeftRight,
   PiggyBank,
   BarChart3,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { logout, useApi } from "../lib/useApi";
 import { useCurrency } from "../lib/useCurrency";
@@ -50,7 +52,13 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
-function Dashboard() {
+function Dashboard({
+  theme,
+  onToggleTheme,
+}: {
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
+}) {
   const { data, loading, error } = useApi<Summary>("/summary");
   const {
     currency,
@@ -177,6 +185,16 @@ function Dashboard() {
                     BTC
                   </option>
                 </select>
+                <button
+                  type="button"
+                  className="theme-toggle-inline"
+                  aria-pressed={theme === "dark"}
+                  aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                  title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                  onClick={onToggleTheme}
+                >
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
               </div>
             </div>
             <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">

@@ -464,11 +464,9 @@ function TrendChart({ months }: { months: MonthData[] }) {
     const idx = Math.round(((pct - X_START) / X_SPAN) * (n - 1));
     setHover(Math.min(n - 1, Math.max(0, idx)));
   };
-
   return (
     <div className="mt-4 pt-16">
       <div className="flex">
-        
         <div className="relative h-48 w-11 shrink-0">
           {ticks.map((t, i) => (
             <span
@@ -480,8 +478,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
             </span>
           ))}
         </div>
-
-        
         <div
           className="relative h-48 min-w-0 flex-1 touch-pan-y"
           onPointerMove={handleMove}
@@ -520,7 +516,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
                 vectorEffect="non-scaling-stroke"
               />
             )}
-
             {n > 1 && (
               <path
                 d={incPath}
@@ -533,14 +528,10 @@ function TrendChart({ months }: { months: MonthData[] }) {
               />
             )}
           </svg>
-
-          
           <div
             className="pointer-events-none absolute inset-y-0 border-l border-dashed border-[#4ade80]"
             style={{ left: activeLeft }}
           />
-
-          
           <span
             className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-gray-400"
             style={{ left: activeLeft, top: `${yPct(am.expenses)}%` }}
@@ -549,8 +540,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
             className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#4ade80] shadow"
             style={{ left: activeLeft, top: `${yPct(am.income)}%` }}
           />
-
-          
           <div
             className="pointer-events-none absolute z-10 w-max -translate-x-1/2 -translate-y-full rounded-xl border border-neutral-200 bg-white px-3 py-2 shadow-lg"
             style={{
@@ -572,8 +561,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
           </div>
         </div>
       </div>
-
-      
       <div className="flex">
         <div className="w-11 shrink-0" />
         <div className="relative mt-2 h-4 min-w-0 flex-1">
@@ -593,7 +580,6 @@ function TrendChart({ months }: { months: MonthData[] }) {
     </div>
   );
 }
-
 function Reports() {
   const { currency, kesPerUsd, kesPerBtc, formatMoney } = useCurrency();
   const [months, setMonths] = useState(3);
@@ -616,7 +602,6 @@ function Reports() {
     { label: "Income", value: formatMoney(income), color: "text-black" },
     { label: "Expenses", value: formatMoney(expenses), color: "text-black" },
   ];
-
   const handleDownload = async () => {
     if (!report || exporting) return;
     setExportError("");
@@ -700,8 +685,6 @@ function Reports() {
         </div>
 
         <MobileNavigation items={menu} />
-
-        
         <div className="mx-3 mt-6 flex flex-wrap items-end justify-between gap-3 sm:mx-4 md:mx-8">
           <div>
             <h1 className="text-2xl font-semibold">Reports</h1>
@@ -723,7 +706,6 @@ function Reports() {
                 {r.label}
               </button>
             ))}
-
             <button
               type="button"
               onClick={handleDownload}

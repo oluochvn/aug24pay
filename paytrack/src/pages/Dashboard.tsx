@@ -10,7 +10,6 @@ import {
 import { logout, useApi } from "../lib/useApi";
 import { useCurrency } from "../lib/useCurrency";
 import MobileNavigation from "../components/MobileNavigation";
-
 interface Transaction {
   _id: string;
   type: "income" | "expense";
@@ -19,14 +18,12 @@ interface Transaction {
   note?: string;
   date: string;
 }
-
 interface Goal {
   _id: string;
   name: string;
   savedAmount: number;
   targetAmount: number;
 }
-
 interface Summary {
   user?: { username?: string };
   balance: number;
@@ -35,7 +32,6 @@ interface Summary {
   recentTransactions: Transaction[];
   goals: Goal[];
 }
-
 const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", { day: "numeric", month: "short" });
 
@@ -54,7 +50,6 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
-
 function Dashboard() {
   const { data, loading, error } = useApi<Summary>("/summary");
   const {
@@ -71,7 +66,6 @@ function Dashboard() {
     formatMoney,
   } = useCurrency();
   const username = data?.user?.username || "";
-
   return (
     <div className="dashboard min-h-screen bg-white text-[#111827] lg:flex">
       <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
@@ -81,7 +75,6 @@ function Dashboard() {
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </NavLink>
-
         <nav className="mt-8 space-y-1 border-b-2 border-white/10">
           {menu.map(({ label, to, icon: Icon }) => (
             <NavLink key={to} to={to} className={sideLink}>
@@ -90,7 +83,6 @@ function Dashboard() {
             </NavLink>
           ))}
         </nav>
-
         <div className="mt-auto space-y-1">
           <button
             type="button"
@@ -100,7 +92,6 @@ function Dashboard() {
             <LogOut size={18} />
             Log out
           </button>
-
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
@@ -117,7 +108,6 @@ function Dashboard() {
           </div>
         </div>
       </aside>
-
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1c1c1d] text-white">
@@ -125,9 +115,7 @@ function Dashboard() {
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </div>
-
         <MobileNavigation items={menu} />
-
         {error && !data && (
           <div className={`mx-3 mt-6 text-sm text-gray-500 sm:mx-4 md:mx-8 md:mt-8 ${card}`}>
             {error}
@@ -191,7 +179,6 @@ function Dashboard() {
                 </select>
               </div>
             </div>
-
             <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">
               <div className={`col-span-2 md:col-span-1 ${card}`}>
                 <p className="text-sm text-gray-500">Total Balance</p>
@@ -199,14 +186,12 @@ function Dashboard() {
                   {loading ? "..." : formatMoney(data?.balance)}
                 </p>
               </div>
-
               <div className={card}>
                 <p className="text-sm text-gray-500">Income</p>
                 <p className="mt-1 break-words text-lg font-semibold text-black sm:text-2xl">
                   {loading ? "..." : formatMoney(data?.income)}
                 </p>
               </div>
-
               <div className={card}>
                 <p className="text-sm text-gray-500">Expense</p>
                 <p className="mt-1 break-words text-lg font-semibold text-black/80 sm:text-2xl">
@@ -214,7 +199,6 @@ function Dashboard() {
                 </p>
               </div>
             </div>
-
             <div className="mx-3 space-y-4 sm:mx-4 md:mx-8 md:space-y-6">
               <section className={card}>
                 <div className="flex flex-wrap items-center justify-between gap-3">

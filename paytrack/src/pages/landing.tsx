@@ -181,7 +181,7 @@ function Landing() {
       `}</style>
       <header className="sticky top-0 z-30 border-b border-white/15 bg-black">
         <nav
-          className="sticky top-0 z-40 mx-auto flex h-16 w-full max-w-7xl items-center justify-between bg-black px-5 sm:px-8 lg:px-12"
+          className="sticky top-0 z-40 mx-auto flex h-16 w-full max-w-7xl items-center justify-between bg-black pl-5 pr-16 sm:pl-8 sm:pr-16 lg:pl-12 lg:pr-16"
           aria-label="Main navigation"
         >
           <Link

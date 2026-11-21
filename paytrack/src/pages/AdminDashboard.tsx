@@ -222,7 +222,7 @@ export default function AdminDashboard() {
   return (
     <main className="admin-dashboard min-h-screen bg-[#F2F2F2] px-4 py-6 text-[#111827] sm:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+        <header className="flex flex-wrap items-center justify-between gap-4 pr-16">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#111827] text-white">
               <Shield size={20} />

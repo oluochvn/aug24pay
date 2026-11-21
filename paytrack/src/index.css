@@ -16,7 +16,7 @@ body {
 .theme-toggle {
   position: fixed;
   right: 1rem;
-  bottom: 1rem;
+  top: 1rem;
   z-index: 60;
   display: flex;
   width: 2.75rem;

@@ -12,7 +12,6 @@ import Reports from "./pages/Report";
 import { CurrencyProvider } from "./lib/currency";
 
 type Theme = "light" | "dark";
-
 function getInitialTheme(): Theme {
   const savedTheme = window.localStorage.getItem("paytrack-theme");
   if (savedTheme === "light" || savedTheme === "dark") return savedTheme;
@@ -20,7 +19,6 @@ function getInitialTheme(): Theme {
     ? "dark"
     : "light";
 }
-
 export default function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const location = useLocation();
@@ -29,7 +27,6 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("paytrack-theme", theme);
   }, [theme]);
-
   return (
     <CurrencyProvider>
       <Routes>

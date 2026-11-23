@@ -455,7 +455,6 @@ export default function Savings() {
                   const target = Number(goal.targetAmount || 0);
                   const progress =
                     target > 0 ? Math.min((saved / target) * 100, 100) : 0;
-
                   const goalRemaining = Math.max(target - saved, 0);
                   const completed = progress >= 100;
                   return (
@@ -531,7 +530,6 @@ export default function Savings() {
                           >
                             Deposit amount ({currency})
                           </label>
-
                           <div className="flex flex-col gap-2 sm:flex-row">
                             <input
                               id={`deposit-${goal._id}`}

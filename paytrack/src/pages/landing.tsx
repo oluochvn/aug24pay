@@ -78,7 +78,7 @@ function FeaturePreview({
             <div className="landing-savings-progress h-1.5 w-[62%] rounded-full bg-white/70 transition-colors duration-300" />
           </div>
           <div className="mt-2 flex justify-between text-[9px] text-white/45">
-            <span>KSH 18,600 saved</span>
+            <span>KSH 18,600 saved</span> 
             <span>KSH 30,000 target</span>
           </div>
           <div className="mt-3 border-t border-white/10 pt-2">
@@ -86,7 +86,7 @@ function FeaturePreview({
             <p className="mt-0.5 text-[9px] text-white/45">Keep building your safety net</p>
           </div>
         </div>
-      )}
+      )}       
       {type === "report" && (
         <div className="w-full max-w-sm border border-white/10 bg-black p-3 text-left">
           <div className="flex items-center justify-between">
@@ -209,7 +209,6 @@ function Landing() {
               </a>
             </li>
           </ul>
-
           <div className="flex items-center gap-3 sm:gap-5">
             <Link
               to="/login"
@@ -226,7 +225,6 @@ function Landing() {
           </div>
         </nav>
       </header>
-
       <main>
         <section
           id="about"
@@ -269,7 +267,6 @@ function Landing() {
               </span>
             </div>
           </div>
-
           <div className="landing-overview group relative mx-auto w-full max-w-[620px] border border-white/15 bg-black p-3 sm:p-5">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
@@ -285,7 +282,6 @@ function Landing() {
                 This month
               </span>
             </div>
-
             <div className="grid grid-cols-2 gap-3 pt-4">
               <div className="border border-white/10 p-4">
                 <p className="text-xs text-white/45">Income</p>
@@ -296,7 +292,6 @@ function Landing() {
                 <p className="landing-expense mt-2 text-xl font-semibold transition-colors duration-300 sm:text-2xl">KSH 32,800</p>
               </div>
             </div>
-
             <div className="mt-3 border border-white/10 p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-white/50">Balance trend</p>
@@ -330,7 +325,6 @@ function Landing() {
                 <span>Week 4</span>
               </div>
             </div>
-
             <div className="mt-3 flex items-center justify-between border border-white/10 p-4">
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center border border-white/15">
@@ -345,7 +339,6 @@ function Landing() {
             </div>
           </div>
         </section>
-
         <section
           id="features"
           className="scroll-mt-20 border-y border-white/10"
@@ -381,7 +374,6 @@ function Landing() {
             </div>
           </div>
         </section>
-
         <section
           id="pricing"
           className="scroll-mt-20 mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 sm:py-20 md:grid-cols-2 lg:px-12"
@@ -419,7 +411,6 @@ function Landing() {
           </div>
         </section>
       </main>
-
       <footer className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
           <Link to="/landing" className="font-semibold text-white/80">
@@ -431,5 +422,4 @@ function Landing() {
     </div>
   );
 }
-
 export default Landing;

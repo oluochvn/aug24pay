@@ -29,7 +29,6 @@ interface Transaction {
   note?: string;
   date: string;
 }
-
 interface FormState {
   type: TxType;
   amount: string;
@@ -181,10 +180,8 @@ function Transactions() {
       navigate("/login", { replace: true });
       return;
     }
-
     setError(e.message);
   };
-
   const update = (field: keyof FormState, value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
@@ -195,7 +192,6 @@ function Transactions() {
       category: "",
     }));
   };
-
   const reset = () => {
     setForm(emptyForm());
     setEditingId(null);
@@ -216,15 +212,12 @@ function Transactions() {
       setError("Enter a valid transaction amount.");
       return;
     }
-
     const amount = toKsh(enteredAmount);
     if (amount === null || amount <= 0) {
       setError("The exchange rate is unavailable or the amount is too small.");
       return;
     }
-
     setSaving(true);
-
     const payload = {
       type: form.type,
       amount,
@@ -232,7 +225,6 @@ function Transactions() {
       note: form.note.trim(),
       date: form.date,
     };
-
     try {
       if (editingId) {
         await request(`${TX}/${editingId}`, {
@@ -245,7 +237,6 @@ function Transactions() {
           body: JSON.stringify(payload),
         });
       }
-
       reset();
       refreshCaches();
       await refresh();
@@ -255,11 +246,9 @@ function Transactions() {
       setSaving(false);
     }
   };
-
   const startEdit = (t: Transaction) => {
     setEditingId(t._id);
     const displayAmount = fromKsh(t.amount);
-
     setForm({
       type: t.type,
       amount:
@@ -270,15 +259,11 @@ function Transactions() {
       note: t.note || "",
       date: t.date.slice(0, 10),
     });
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
   const remove = async (id: string) => {
     if (!window.confirm("Delete this transaction?")) return;
-
     setError("");
-
     try {
       await request(`${TX}/${id}`, { method: "DELETE" });
 
@@ -301,8 +286,6 @@ function Transactions() {
 
   return (
     <div className="dashboard min-h-screen bg-white text-[#111827] lg:flex">
-
-      {/* Sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 p-4 pt-10 lg:sticky lg:top-0 lg:flex lg:h-screen">
 
         <NavLink to="/dashboard" className="flex items-center gap-2 px-1">

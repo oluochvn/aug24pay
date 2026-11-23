@@ -43,14 +43,12 @@ const menu = [
   { label: "Savings", to: "/savings", icon: PiggyBank },
   { label: "Reports", to: "/reports", icon: BarChart3 },
 ];
-
 const sideLink = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
     isActive
       ? "bg-white font-medium text-[#111827] shadow-sm"
       : "text-gray-500 hover:bg-white/60"
   }`;
-
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 function Dashboard({
   theme,
@@ -233,7 +231,6 @@ function Dashboard({
                     View all
                   </NavLink>
                 </div>
-
                 {!loading && data?.recentTransactions.length === 0 ? (
                   <div className="mt-4 border-t border-neutral-100 pt-4">
                     <p className="text-sm text-gray-500">
@@ -282,7 +279,6 @@ function Dashboard({
                   </ul>
                 )}
               </section>
-
               <section className={card}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -298,7 +294,6 @@ function Dashboard({
                     View goals
                   </NavLink>
                 </div>
-
                 {!loading && data?.goals.length === 0 ? (
                   <div className="mt-4 border-t border-neutral-100 pt-4">
                     <p className="text-sm text-gray-500">
@@ -356,5 +351,4 @@ function Dashboard({
     </div>
   );
 }
-
 export default Dashboard;

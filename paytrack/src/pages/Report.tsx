@@ -71,7 +71,6 @@ const sideLink = ({ isActive }: { isActive: boolean }) =>
       ? "bg-white font-medium text-[#111827] shadow-sm"
       : "text-gray-500 hover:bg-white/60"
   }`;
-
 const card = "rounded-2xl border border-neutral-200 bg-white p-4";
 async function fetchTransactions(months: number): Promise<Transaction[]> {
   const token = localStorage.getItem("token");
@@ -82,22 +81,18 @@ async function fetchTransactions(months: number): Promise<Transaction[]> {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
-
   if (response.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
     throw new Error("Session expired. Please log in again.");
   }
-
   if (!response.ok) throw new Error("Could not load transactions.");
-
   const result = await response.json().catch(() => null);
   const list: Transaction[] = Array.isArray(result)
     ? result
     : Array.isArray(result?.transactions)
       ? result.transactions
       : [];
-
   const now = new Date();
   const from = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
 
@@ -105,7 +100,6 @@ async function fetchTransactions(months: number): Promise<Transaction[]> {
     .filter((t) => new Date(t.date) >= from)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
-
 async function downloadPdf(
   report: Report,
   months: number,
@@ -115,21 +109,18 @@ async function downloadPdf(
   kesPerBtc: number | null
 ) {
   const { jsPDF } = await import("jspdf");
-
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
   const M = 40;
   const right = W - M;
   let y = M;
-
   const ensure = (h: number) => {
     if (y + h > H - M) {
       doc.addPage();
       y = M;
     }
   };
-
   const income = report.income || 0;
   const expenses = report.expenses || 0;
   const categoryTotal = report.categories.reduce((s, c) => s + c.total, 0);
@@ -142,12 +133,10 @@ async function downloadPdf(
   doc.setTextColor(107, 114, 128);
   doc.text("paytrack", M, y + 8);
   y += 28;
-
   doc.setFontSize(22);
   doc.setTextColor(17, 24, 39);
   doc.text("Financial report", M, y);
   y += 18;
-
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(107, 114, 128);
@@ -189,14 +178,12 @@ async function downloadPdf(
   doc.setTextColor(17, 24, 39);
   doc.text("Income vs expenses by month", M, y);
   y += 16;
-
   const cols = {
     month: M,
     income: M + 250,
     expenses: M + 370,
     net: right,
   };
-
   const tableHeader = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
@@ -210,9 +197,7 @@ async function downloadPdf(
     doc.line(M, y, right, y);
     y += 14;
   };
-
   tableHeader();
-
   if (report.months.length === 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -220,7 +205,6 @@ async function downloadPdf(
     doc.text("No transactions in this period yet.", M, y);
     y += 20;
   }
-
   report.months.forEach((m) => {
     if (y + 20 > H - M) {
       doc.addPage();
@@ -228,7 +212,6 @@ async function downloadPdf(
       tableHeader();
     }
     const mNet = m.income - m.expenses;
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(17, 24, 39);
@@ -243,13 +226,11 @@ async function downloadPdf(
     if (mNet < 0) doc.setTextColor(255, 77, 82);
     else doc.setTextColor(17, 24, 39);
     doc.text(signedMoney(mNet), cols.net, y, { align: "right" });
-
     y += 8;
     doc.setDrawColor(240, 240, 240);
     doc.line(M, y, right, y);
     y += 14;
   });
-
   y += 16;
   ensure(60);
   doc.setFont("helvetica", "bold");
@@ -265,19 +246,15 @@ async function downloadPdf(
     doc.text("No expenses in this period yet.", M, y);
     y += 20;
   }
-
   report.categories.forEach((c) => {
     ensure(36);
     const pct = categoryTotal ? Math.round((c.total / categoryTotal) * 100) : 0;
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(17, 24, 39);
     doc.text(c.category, M, y);
-
     doc.setTextColor(107, 114, 128);
     doc.text(`${money(c.total)} - ${pct}%`, right, y, { align: "right" });
-
     y += 8;
     const trackW = right - M;
     doc.setFillColor(229, 229, 229);
@@ -295,7 +272,6 @@ async function downloadPdf(
   doc.setTextColor(17, 24, 39);
   doc.text(`All transactions (${transactions.length})`, M, y);
   y += 16;
-
   const tc = { date: M, category: M + 80, note: M + 195, amount: right };
 
   const clip = (text: string, width: number) => {
@@ -306,7 +282,6 @@ async function downloadPdf(
     }
     return `${out}...`;
   };
-
   const txHeader = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
@@ -320,9 +295,7 @@ async function downloadPdf(
     doc.line(M, y, right, y);
     y += 14;
   };
-
   txHeader();
-
   if (transactions.length === 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -330,19 +303,15 @@ async function downloadPdf(
     doc.text("No transactions in this period yet.", M, y);
     y += 20;
   }
-
   transactions.forEach((t) => {
     if (y + 20 > H - M) {
       doc.addPage();
       y = M;
       txHeader();
     }
-
     const isIncome = t.type === "income";
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-
     doc.setTextColor(107, 114, 128);
     doc.text(
       new Date(t.date).toLocaleDateString("en-KE", {
@@ -353,7 +322,6 @@ async function downloadPdf(
       tc.date,
       y
     );
-
     doc.setTextColor(17, 24, 39);
     doc.text(clip(t.category || "-", 105), tc.category, y);
 
@@ -365,7 +333,6 @@ async function downloadPdf(
     doc.text(`${isIncome ? "+" : "-"}${money(t.amount)}`, tc.amount, y, {
       align: "right",
     });
-
     y += 7;
     doc.setDrawColor(240, 240, 240);
     doc.line(M, y, right, y);
@@ -384,7 +351,6 @@ async function downloadPdf(
   const date = new Date().toISOString().slice(0, 10);
   doc.save(`paytrack-report-${months}m-${date}.pdf`);
 }
-
 const CHART_W = 600;
 const CHART_H = 200;
 const X_START = 3;

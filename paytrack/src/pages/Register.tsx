@@ -195,7 +195,7 @@ export default function Register() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   className={`${inputClass} pr-11`}
-                />
+                />,h
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((v) => !v)}

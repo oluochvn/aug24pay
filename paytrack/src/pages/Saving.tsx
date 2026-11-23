@@ -415,7 +415,6 @@ export default function Savings() {
                       ? "Save changes"
                       : "Create goal"}
                 </button>
-
                 {editingId && (
                   <button
                     type="button"
@@ -433,7 +432,6 @@ export default function Savings() {
             <p className="text-xs text-gray-500">
               {goals.length} {goals.length === 1 ? "goal" : "goals"}
             </p>
-
             {loading ? (
               <p className="mt-3 text-sm text-gray-500">
                 Loading your savings...

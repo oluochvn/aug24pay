@@ -36,7 +36,6 @@ interface FormState {
   note: string;
   date: string;
 }
-
 const categories: Record<TxType, string[]> = {
   expense: [
     "Food & Drink",
@@ -63,14 +62,12 @@ const categories: Record<TxType, string[]> = {
     "Other Income",
   ],
 };
-
 const today = () => {
   const d = new Date();
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 10);
 };
-
 const emptyForm = (): FormState => ({
   type: "expense",
   amount: "",
@@ -78,28 +75,24 @@ const emptyForm = (): FormState => ({
   note: "",
   date: today(),
 });
-
 const day = (d: string) =>
   new Date(d).toLocaleDateString("en-KE", {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
-
 const menu = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Transactions", to: "/transactions", icon: ArrowLeftRight },
   { label: "Savings", to: "/savings", icon: PiggyBank },
   { label: "Reports", to: "/reports", icon: BarChart3 },
 ];
-
 const sideLink = ({ isActive }: { isActive: boolean }) =>
   `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
     isActive
       ? "bg-white font-medium text-[#111827] shadow-sm"
       : "text-gray-500 hover:bg-white/60"
   }`;
-
 const card =
   "rounded-2xl border border-neutral-200 bg-white p-4";
 
@@ -108,36 +101,27 @@ const inputClass =
 
 async function request(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
-
   const res = await fetch(`${API}${path}`, {
     ...options,
-    // Never let the browser answer from its own HTTP cache.
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
-
   const body = await res.json().catch(() => ({}));
-
   if (!res.ok) {
     throw Object.assign(
       new Error(body.message || `Request failed (${res.status})`),
       { status: res.status }
     );
   }
-
   return body;
 }
-
-// Pages that cache data derived from transactions. invalidate() matches by
-// prefix, so "/reports" also clears every ?months= range.
 const refreshCaches = () => {
   invalidate("/summary");
   invalidate("/reports");
 };
-
 function Transactions() {
   const navigate = useNavigate();
   const {
@@ -148,13 +132,10 @@ function Transactions() {
     toKsh,
     fromKsh,
   } = useCurrency();
-
-  // Shared cache with the other pages, so the sidebar name needs no extra request.
   const { data: summary } = useApi<{ user?: { username?: string } }>(
     "/summary"
   );
   const username = summary?.user?.username || "";
-
   const {
     data: listData,
     loading,
@@ -162,19 +143,15 @@ function Transactions() {
     refresh,
     update: setItems,
   } = useApi<Transaction[] | { transactions: Transaction[] }>(TX);
-
   const items: Transaction[] = Array.isArray(listData)
     ? listData
     : listData?.transactions ?? [];
-
   const [form, setForm] = useState<FormState>(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
   const handleError = (err: unknown) => {
     const e = err as Error & { status?: number };
-
     if (e.status === 401) {
       localStorage.removeItem("token");
       navigate("/login", { replace: true });
@@ -197,7 +174,6 @@ function Transactions() {
     setEditingId(null);
     setError("");
   };
-
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
@@ -206,7 +182,6 @@ function Transactions() {
       setError("Please select a transaction category.");
       return;
     }
-
     const enteredAmount = Number(form.amount);
     if (!Number.isFinite(enteredAmount) || enteredAmount <= 0) {
       setError("Enter a valid transaction amount.");
@@ -266,20 +241,16 @@ function Transactions() {
     setError("");
     try {
       await request(`${TX}/${id}`, { method: "DELETE" });
-
       if (editingId === id) reset();
-
       setItems(items.filter((t) => t._id !== id));
       refreshCaches();
     } catch (err) {
       handleError(err);
     }
   };
-
   const income = items
     .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
-
   const expenses = items
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
@@ -294,7 +265,6 @@ function Transactions() {
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </NavLink>
-
         <nav className="mt-8 space-y-1 border-b-2 border-white/10">
           {menu.map(({ label, to, icon: Icon }) => (
             <NavLink key={to} to={to} className={sideLink}>
@@ -303,7 +273,6 @@ function Transactions() {
             </NavLink>
           ))}
         </nav>
-
         <div className="mt-auto space-y-1">
           <button
             type="button"
@@ -313,7 +282,6 @@ function Transactions() {
             <LogOut size={18} />
             Log out
           </button>
-
           <div className="mt-3 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-3">
             <div
               title={username}
@@ -331,46 +299,33 @@ function Transactions() {
           </div>
         </div>
       </aside>
-
-      {/* Main content */}
       <div className="min-w-0 flex-1 p-2 pb-6 sm:p-4">
-
-        {/* Mobile brand */}
         <div className="mx-3 mt-3 flex items-center gap-2 sm:mx-4 lg:hidden">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1c1c1d] text-white">
             <Wallet size={18} />
           </div>
           <span className="text-sm font-semibold">paytrack</span>
         </div>
-
-        {/* Mobile navigation */}
         <MobileNavigation items={menu} />
-
-        {/* Heading */}
         <div className="mx-3 mt-6 sm:mx-4 md:mx-8">
           <h1 className="text-2xl font-semibold">Transactions</h1>
           <p className="text-sm text-gray-500">
             Manage and track your income and expenses
           </p>
         </div>
-
-        {/* Summary */}
         <div className="m-3 mt-5 grid grid-cols-2 gap-3 sm:m-4 sm:mt-6 md:m-8 md:mt-6 md:grid-cols-3 md:gap-6">
-
           <div className={`col-span-2 md:col-span-1 ${card}`}>
             <p className="text-sm text-gray-500">Total transactions</p>
             <p className="mt-1 text-2xl font-semibold">
               {loading ? "..." : items.length}
             </p>
           </div>
-
           <div className={card}>
             <p className="text-sm text-gray-500">Total income</p>
             <p className="mt-1 break-words text-lg font-semibold text-black sm:text-2xl">
               {loading ? "..." : formatMoney(income)}
             </p>
           </div>
-
           <div className={card}>
             <p className="text-sm text-gray-500">Total expenses</p>
             <p className="mt-1 break-words text-lg font-semibold text-black/70 sm:text-2xl">
@@ -378,8 +333,6 @@ function Transactions() {
             </p>
           </div>
         </div>
-
-        {/* Add transaction */}
         <form
           onSubmit={submit}
           className={`mx-3 mt-5 sm:mx-4 md:mx-8 md:mt-6 ${card}`}
@@ -393,7 +346,6 @@ function Transactions() {
                 Record a new income or expense
               </p>
             </div>
-
             {editingId && (
               <button
                 type="button"
@@ -405,15 +357,11 @@ function Transactions() {
               </button>
             )}
           </div>
-
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
-            {/* Type */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500">
                 Transaction type
               </label>
-
               <select
                 value={form.type}
                 onChange={(e) => changeType(e.target.value as TxType)}
@@ -423,13 +371,10 @@ function Transactions() {
                 <option value="income">Income</option>
               </select>
             </div>
-
-            {/* Amount */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500">
                 Amount ({currency})
               </label>
-
               <input
                 type="number"
                 min={currency === "BTC" ? "0.00000001" : "0.01"}
@@ -445,13 +390,10 @@ function Transactions() {
                 className={inputClass}
               />
             </div>
-
-            {/* Category dropdown */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500">
                 Category
               </label>
-
               <select
                 required
                 value={form.category}
@@ -459,7 +401,6 @@ function Transactions() {
                 className={inputClass}
               >
                 <option value="">Select category</option>
-
                 {categories[form.type].map((category) => (
                   <option key={category} value={category}>
                     {category}
@@ -467,13 +408,10 @@ function Transactions() {
                 ))}
               </select>
             </div>
-
-            {/* Note */}
             <div className="sm:col-span-2 lg:col-span-1">
               <label className="mb-1.5 block text-xs font-medium text-gray-500">
                 Note (optional)
               </label>
-
               <input
                 type="text"
                 placeholder="Add a description"
@@ -482,13 +420,10 @@ function Transactions() {
                 className={inputClass}
               />
             </div>
-
-            {/* Date */}
             <div>
               <label className="mb-1.5 block text-xs font-medium text-gray-500">
                 Date
               </label>
-
               <input
                 type="date"
                 required
@@ -498,7 +433,6 @@ function Transactions() {
               />
             </div>
           </div>
-
           {error && (
             <p className="mt-3 text-sm text-gray-400">{error}</p>
           )}
@@ -528,8 +462,6 @@ function Transactions() {
             )}
           </div>
         </form>
-
-        {/* History */}
         <div className={`mx-3 mt-5 sm:mx-4 md:mx-8 md:mt-6 ${card}`}>
           <div className="flex items-center justify-between gap-3">
             <div>
